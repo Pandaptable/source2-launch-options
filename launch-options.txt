@@ -73,6 +73,7 @@
 -allow_mdexdbg
 -allow_non_tools_paths
 -allow_no_lobby_connect
+-allow_round_backup_files
 -allow_third_party_software
 -allow_verbose_logging
 -allreadonlyassets

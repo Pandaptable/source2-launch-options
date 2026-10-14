@@ -21,6 +21,7 @@
 -debugwelcome, 1042346542
 -find_unlocalized, 1116175964
 -gamestatsloggingtofile, 1254442816
+-disable_workshop_command_filtering, 1432471252
 -noscripting, 1526587341
 -network_class_conform_check, 1561589398
 -curtimewarnings, 1646659829

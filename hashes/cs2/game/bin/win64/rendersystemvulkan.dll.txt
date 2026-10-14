@@ -57,7 +57,6 @@
 -vulkanrenderthreadstack, 2194226460
 2299247585
 2346691913
-2382042679
 -vulkan_disable_fossilize_whitelist, 2414162262
 -vulkan_disable_ext_conditional_rendering, 2429838881
 -noinitfallbacktextures, 2462688185
