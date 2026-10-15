@@ -1,5 +1,5 @@
 -tools, 197456290
-295913822
+-net_codegen_dumpfields, 295913822
 -buildcubemaps, 375552886
 -dev, 574071661
 -game, 602672632
@@ -25,7 +25,7 @@
 -avx, 3020312170
 -nobots, 3308470460
 -perfectworld, 3451720338
-3489200015
+-net_codegen_debugfield, 3489200015
 -internaliprequired, 3515233334
 -vscriptdebug, 3616760377
 +dev_simulate_gcdown, 4037768485

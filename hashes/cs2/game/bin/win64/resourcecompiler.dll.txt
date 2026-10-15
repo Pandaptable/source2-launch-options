@@ -1,14 +1,14 @@
 -novconsole, 12931391
-25050535
+-lightmappackertimings, 25050535
 -attachtodebugger, 39359517
 -steam, 53536153
 -noborder, 85611144
 -720, 93284877
 -experimental_smartprops, 162242015
-166991432
+-vrad3writedebug, 166991432
 -tools, 197456290
 -highdpi, 208895721
-258852483
+-spew_aggregate_rejects, 258852483
 -vulkan, 259954249
 -height, 297341175
 327937524
@@ -44,7 +44,7 @@
 -vconsole, 1170955440
 -h, 1193756079
 -con_logfile, 1234987984
-1312559922
+-steamaudio_gpu, 1312559922
 -addon, 1321118783
 -msaa, 1449492945
 -lightmapdeterministiccharts, 1479722877
@@ -57,9 +57,9 @@
 -sse4, 1849011768
 -consolelog_append, 1849850619
 -conrotate, 1937598139
-1997211886
+-logstdiotofile, 1997211886
 -full_memory_dumps, 2037331155
-2085763134
+-lightmapdetailedcharting, 2085763134
 -fastpack, 2129537917
 -extract_sentence, 2260033171
 -sdl_log, 2284796977
@@ -89,7 +89,7 @@
 -anim_compile_stats, 3254258045
 -nop4, 3299646795
 -no_hierarchical_vpk_memory_mapping, 3378808146
-3489200015
+-net_codegen_debugfield, 3489200015
 -gpuraytracing, 3529211103
 -vrad3, 3532387015
 -1600, 3701529680

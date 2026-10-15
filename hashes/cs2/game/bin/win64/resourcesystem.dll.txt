@@ -1,5 +1,5 @@
 -tools, 197456290
-407190304
+-allow_missing_resources, 407190304
 -resource_system_verbose, 536865351
 -legacy_tools_resource_listeners, 553687688
 -force_all_resource_loads_to_fail, 2114520145

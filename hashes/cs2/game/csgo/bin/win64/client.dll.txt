@@ -4,7 +4,7 @@
 -trusted, 165799374
 -tools, 197456290
 +playdemo, 274617796
-295913822
+-net_codegen_dumpfields, 295913822
 -buildcubemaps, 375552886
 -all_languages, 455342288
 -rendertask, 474059147
@@ -46,7 +46,7 @@
 -no_hierarchical_vpk_memory_mapping, 3378808146
 -perfectworld, 3451720338
 +connect_lobby, 3458441557
-3489200015
+-net_codegen_debugfield, 3489200015
 -internaliprequired, 3515233334
 -autoconfig, 3596328012
 -vscriptdebug, 3616760377

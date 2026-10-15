@@ -1,6 +1,6 @@
 -experimental_smartprops, 162242015
 -tools, 197456290
-727455807
+-spacewalkcamera, 727455807
 --legacy_asset_live_preview, 1424991031
 -sse4, 1849011768
 -smoothtoolcamera, 2258526725

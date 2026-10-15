@@ -1,6 +1,4 @@
-1256
 -tool, 1574749
-3120288
 -novconsole, 12931391
 -uselogdir, 21729377
 -valveserver, 34501765
@@ -45,7 +43,7 @@
 -adapter, 871401063
 -noassetbrowser, 876441444
 -notoolsdev, 885745964
-896260251
+-fake_steam_china, 896260251
 -skip_driver_check, 921320528
 -enablepassiveasserts, 936398129
 -forcenovsync, 1039533358
@@ -94,7 +92,7 @@
 -concommandpipe, 1852627485
 -heapcheck, 1892883470
 -conrotate, 1937598139
-1997211886
+-logstdiotofile, 1997211886
 -full_memory_dumps, 2037331155
 -nohltv, 2074638849
 -textlanguage, 2115173857
@@ -154,7 +152,7 @@
 -perfectworld, 3451720338
 -ioidlecheck, 3468939281
 -set_power_qos_disable, 3478593498
-3489200015
+-net_codegen_debugfield, 3489200015
 -nomaster, 3491324333
 -allow_no_lobby_connect, 3519569274
 -gpuraytracing, 3529211103

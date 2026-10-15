@@ -13,7 +13,7 @@
 -r_vulkan_render_threads, 564846076
 -vulkan_vma_defrag_each_frame, 665336905
 -antilag, 760425684
-783739508
+-nolatewarp, 783739508
 -abortprocessonserioustexturewarning, 825867510
 -adapter, 871401063
 -sgpu, 910340513
@@ -26,13 +26,13 @@
 -vulkan_enable_ext_device_generated_commands, 1183232867
 -vulkan_disable_steam_downloaded_shader_cache, 1222989069
 -renderdoc_capture_validation_errors, 1238242786
-1242785521
+-vulkan_allow_bandicam_layer, 1242785521
 -vulkan_allow_virtual_gpu, 1269979658
 -vulkan_disable_khr_separate_depth_stencil_layouts, 1277924399
 -vulkan_depth_texture_as_r32f, 1440958426
 -vulkan_enable_ext_pipeline_robustness, 1450036158
 -vulkan_disable_ext_swapchain_maintenance1, 1455395299
-1458039496
+-vulkan_disable_khr_fragment_shader_barycentric, 1458039496
 -vulkan_disable_ext_mesh_shaders, 1471640956
 -noreflex, 1548402123
 -vulkan_alloc_callbacks, 1549204801
@@ -53,10 +53,11 @@
 -vulkan_enable_nv_raytracing_validation, 1957510917
 -renderdoc, 1980692650
 -autoconfig_level, 1997326025
-2179270029
+-vulkan_disable_ext_opacity_micromap, 2179270029
 -vulkanrenderthreadstack, 2194226460
-2299247585
-2346691913
+-vulkan_gpuav_shader_names, 2254146052
+-noaftermath, 2299247585
+-vulkan_validation_duplicate_message_limit, 2346691913
 -vulkan_disable_fossilize_whitelist, 2414162262
 -vulkan_disable_ext_conditional_rendering, 2429838881
 -noinitfallbacktextures, 2462688185
@@ -87,7 +88,7 @@
 -vulkan_disable_ext_memory_priority, 3227945026
 -vulkan_validation_info, 3305840807
 -vulkan_validation_error_assert, 3309685411
-3337986277
+-aftermath_full, 3337986277
 -vulkan_disable_amd_memory_overallocation_behavior, 3370526142
 -nogpuraytracing, 3400649128
 -vulkan_disable_steam_shader_cache, 3417464481
@@ -104,6 +105,7 @@
 -vulkan_validation_warnings, 3720824177
 -vulkan_disable_pipeline_cache, 3729780277
 -vulkan_disable_graphics_pipeline_library, 3792739516
+-rtest1, 3929267354
 -noconfig, 4015530479
 -maxtextureres, 4068712167
 -nsight, 4138247883

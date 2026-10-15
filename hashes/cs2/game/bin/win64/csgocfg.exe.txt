@@ -10,7 +10,7 @@
 -game, 602672632
 -showasserts, 658464540
 -nologstdiotofile, 803571430
-867136674
+-defaultaddon, 867136674
 -contentroot, 1063703514
 -fpexcept, 1065043357
 -publiccontent, 1070638683
@@ -24,7 +24,7 @@
 -sse4, 1849011768
 -consolelog_append, 1849850619
 -conrotate, 1937598139
-1997211886
+-logstdiotofile, 1997211886
 -full_memory_dumps, 2037331155
 -nostyle, 2189129855
 -sdl_log, 2284796977

@@ -1,4 +1,3 @@
-1256
 -novconsole, 12931391
 -attachtodebugger, 39359517
 -steam, 53536153
@@ -24,7 +23,7 @@
 -no_tools_ignorechildprocess_env, 631902775
 -safe_mode, 642946094
 -showasserts, 658464540
-727455807
+-spacewalkcamera, 727455807
 -480, 796564511
 -nologstdiotofile, 803571430
 -adapter, 871401063
@@ -33,14 +32,14 @@
 -forcenovsync, 1039533358
 -contentroot, 1063703514
 -fpexcept, 1065043357
-1067323649
+-noautoshutdown, 1067323649
 -publiccontent, 1070638683
 -breakimmediately, 1112866904
 -enable_qaccessible, 1129441271
 -allow_non_tools_paths, 1133895985
 -empty, 1166302021
 -vconsole, 1170955440
-1171869266
+-norestartdialog, 1171869266
 -h, 1193756079
 -port, 1226158575
 -con_logfile, 1234987984
@@ -49,13 +48,13 @@
 -reset, 1580388700
 -w, 1610683921
 -consolelog_notimestamp, 1615887145
-1627703442
+-np, 1627703442
 -nv, 1751934355
 -sse4, 1849011768
 -consolelog_append, 1849850619
 -linetest, 1898818375
 -conrotate, 1937598139
-1997211886
+-logstdiotofile, 1997211886
 -nostyle, 2189129855
 -smoothtoolcamera, 2258526725
 -address, 2265581820
@@ -85,11 +84,11 @@
 -vconport, 3008056938
 -avx, 3020312170
 -border, 3067777132
-3097347022
+-noplaque, 3097347022
 -coop_fullscreen, 3231905404
 -fullscreen, 3232779058
 -gpuraytracing, 3529211103
-3565627262
+-subtool, 3565627262
 -autoconfig, 3596328012
 -1600, 3701529680
 -x, 3793427571

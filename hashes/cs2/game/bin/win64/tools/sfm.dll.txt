@@ -1,6 +1,6 @@
 -tools, 197456290
 -sfm_moviesettings, 684621666
-727455807
+-spacewalkcamera, 727455807
 -sfm_rendersettings, 878179845
 -sfm_layoffshotlist, 900730917
 -sfm_noautosave, 1057540748
@@ -15,7 +15,7 @@
 -avx, 3020312170
 -sfm_shadow_resolution, 3184142761
 -nop4, 3299646795
-3489200015
+-net_codegen_debugfield, 3489200015
 -sfm_layoffframerange, 3606865888
 -sfm_layoffshotrange, 3839887312
 -sse2, 4274893216

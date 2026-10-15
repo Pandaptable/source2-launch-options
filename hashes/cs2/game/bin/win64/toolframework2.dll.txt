@@ -1,17 +1,18 @@
 -tools, 197456290
 564320376
-721986684
+-generatethumbnailsclear, 721986684
 -enable_qaccessible, 1129441271
-1236174432
+-generatethumbnailsmaxtime, 1236174432
 -addon, 1321118783
 -disable_loading_tool_settings, 1336680278
 -sse4, 1849011768
-1873549870
+-generatethumbnails, 1873549870
 -disableassetsystem, 1937712909
 -recompile_special_dependency_mismatches, 2160483264
 -nostyle, 2189129855
 -wait_before_assetsystem_startup, 2245844626
-2383142401
+-generatethumbnailssubstr, 2383142401
+-multiple_tools_instances, 2425750015
 -sse3, 2776830954
 -avx, 3020312170
 -disable_asset_autorecompile, 3317354165

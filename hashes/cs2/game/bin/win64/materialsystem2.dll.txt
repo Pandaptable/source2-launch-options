@@ -1,18 +1,17 @@
 -steam, 53536153
 -tools, 197456290
 -shaders, 334828552
-341089031
+-material_leaks, 341089031
 -noasyncmaterialload, 556000788
 -shaderdebugging, 1568951001
 -batchwarnings, 1715525156
 -sse4, 1849011768
-1952542070
 -shaders_force_recompile, 2122897934
 +mat_clearshadercache, 2196080635
 -insecure, 2406745183
 -sse3, 2776830954
 -shaderopt, 2921512743
-2931451025
+-materialleaks, 2931451025
 -avx, 3020312170
 -mat_force_molten_vk, 3087691872
 -batcherrors, 3231712520

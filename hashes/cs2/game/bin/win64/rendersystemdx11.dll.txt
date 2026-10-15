@@ -7,7 +7,7 @@
 -swap_chain_as_is, 633101115
 -ags_async_shaders, 643183949
 -antilag, 760425684
-783739508
+-nolatewarp, 783739508
 -abortprocessonserioustexturewarning, 825867510
 -adapter, 871401063
 -sgpu, 910340513
@@ -42,6 +42,7 @@
 -autoconfig, 3596328012
 -nomultigpu, 3691212280
 -nogammaramp, 3732322922
+-rtest1, 3929267354
 -noconfig, 4015530479
 -maxtextureres, 4068712167
 -dxwarp, 4184646854

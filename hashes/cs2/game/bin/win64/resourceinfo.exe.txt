@@ -3,7 +3,7 @@
 -steam, 53536153
 -binstrings, 125120260
 -tools, 197456290
-213487719
+-inputlistprefix, 213487719
 -help, 239485223
 -condebug, 450968086
 -allow_exe_in_build_dir, 453874011
@@ -29,18 +29,18 @@
 -h, 1193756079
 -con_logfile, 1234987984
 -addon, 1321118783
-1418210389
-1574611955
+-size_survey, 1418210389
+-flat_vpklist, 1574611955
 -consolelog_notimestamp, 1615887145
 -all, 1699106744
 -game_res_kv3, 1746246449
-1746287781
+-stringsheader, 1746287781
 -nv, 1751934355
 -diff_format, 1766549222
 -sse4, 1849011768
 -consolelog_append, 1849850619
 -conrotate, 1937598139
-1997211886
+-logstdiotofile, 1997211886
 -module_dep, 2249174310
 -sdl_log, 2284796977
 -novpk, 2345050509
@@ -67,5 +67,5 @@
 -strings, 3824544696
 -baremode, 3956950621
 -devcontent, 3985700755
-4122924782
+-check_mesh_compression, 4122924782
 -sse2, 4274893216
