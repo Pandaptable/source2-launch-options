@@ -11,7 +11,7 @@
 -spew_aggregate_rejects, 258852483
 -vulkan, 259954249
 -height, 297341175
-327937524
+--pulse_compile_temporaries, 327937524
 -y, 439648255
 -resizing, 446691998
 -condebug, 450968086
@@ -78,7 +78,7 @@
 -vsync, 2767798943
 -sse3, 2776830954
 -rs_reset, 2885683845
-2912373279
+--force_return_cell_binding, 2912373279
 -vconport, 3008056938
 -avx, 3020312170
 -border, 3067777132

@@ -31,8 +31,10 @@
 +sv_dev_simulate_gcdown
 +sv_pure
 --debug_game_event_list
+--force_return_cell_binding
 --geoview-persistent-hidden-ids
 --legacy_asset_live_preview
+--pulse_compile_temporaries
 --pulse_verbose
 -1080
 -1600
@@ -659,6 +661,7 @@
 -lmvnoguard
 -load_string_token_database
 -localcser
+-locnomfopt
 -lods
 -log
 -logstdiotofile
@@ -1512,6 +1515,7 @@
 -vulkan_metal_validation
 -vulkan_minimal_validation
 -vulkan_preload_fossilize
+-vulkan_skip_graphics_pipeline_libraries
 -vulkan_tools_gpl
 -vulkan_track_pipeline_compile_times
 -vulkan_trim_all_command_pools
@@ -1532,6 +1536,7 @@
 -wait_before_assetsystem_startup
 -walk
 -warmtime
+-warnifnotoverridden
 -warningsaserrors
 -wavonly
 -weaponmodelcache
