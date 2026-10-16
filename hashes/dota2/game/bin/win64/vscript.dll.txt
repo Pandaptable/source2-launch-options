@@ -1,0 +1,8 @@
+-tools, 197456290
+-sse4, 1849011768
+-luadbg_inspector, 2605530460
+-sse3, 2776830954
+-avx, 3020312170
+-vscriptdebug_script, 3917576620
+-luajit, 3945205914
+-sse2, 4274893216

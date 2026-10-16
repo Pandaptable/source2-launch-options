@@ -49,7 +49,6 @@
 -msaa, 1449492945
 -lightmapdeterministiccharts, 1479722877
 -w, 1610683921
--consolelog_notimestamp, 1615887145
 -normalvis, 1743092877
 -nv, 1751934355
 -parallelhammerrenderables, 1788282970
@@ -59,7 +58,6 @@
 -conrotate, 1937598139
 -logstdiotofile, 1997211886
 -full_memory_dumps, 2037331155
--lightmapdetailedcharting, 2085763134
 -fastpack, 2129537917
 -extract_sentence, 2260033171
 -sdl_log, 2284796977

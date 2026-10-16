@@ -1,0 +1,11 @@
+-tools, 197456290
+-directsound, 804019958
+-sdlaudio, 847762038
+-sse4, 1849011768
+-memory_map_sound, 2049873468
+-sse3, 2776830954
+-avx, 3020312170
+-windowsaudio, 3042533443
+-nosound, 3676274044
+-sdlaudiodriver, 3908291797
+-sse2, 4274893216

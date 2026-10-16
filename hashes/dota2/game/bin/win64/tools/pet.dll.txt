@@ -1,0 +1,13 @@
+-tools, 197456290
+327937524
+--pulse_verbose, 502640937
+-spacewalkcamera, 727455807
+-sse4, 1849011768
+-smoothtoolcamera, 2258526725
+-no_maximize_update, 2706099331
+-vsync, 2767798943
+-sse3, 2776830954
+2912373279
+-avx, 3020312170
+-toolsquiet, 3513791888
+-sse2, 4274893216

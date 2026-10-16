@@ -12,7 +12,6 @@
 -bufferdebugstring, 749610404
 -disable_minidump_log, 833355113
 -testmode, 869412437
--ignorecontentasserts, 1009482100
 -noassert, 1067982513
 -noloaderlockprobe, 1236188109
 -processheap, 1257140294

@@ -55,7 +55,6 @@
 -autoconfig_level, 1997326025
 -vulkan_disable_ext_opacity_micromap, 2179270029
 -vulkanrenderthreadstack, 2194226460
--vulkan_gpuav_shader_names, 2254146052
 -noaftermath, 2299247585
 -vulkan_validation_duplicate_message_limit, 2346691913
 -vulkan_disable_fossilize_whitelist, 2414162262
@@ -105,7 +104,6 @@
 -vulkan_validation_warnings, 3720824177
 -vulkan_disable_pipeline_cache, 3729780277
 -vulkan_disable_graphics_pipeline_library, 3792739516
--rtest1, 3929267354
 -noconfig, 4015530479
 -maxtextureres, 4068712167
 -nsight, 4138247883

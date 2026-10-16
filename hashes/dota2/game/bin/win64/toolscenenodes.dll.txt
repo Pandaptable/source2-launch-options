@@ -1,0 +1,10 @@
+-experimental_smartprops, 162242015
+-tools, 197456290
+-parallelhammerproceduralupdate, 1031966263
+-parallelhammerrenderables, 1788282970
+-sse4, 1849011768
+-sse3, 2776830954
+-avx, 3020312170
+-no_hierarchical_vpk_memory_mapping, 3378808146
+-net_codegen_debugfield, 3489200015
+-sse2, 4274893216

@@ -39,9 +39,7 @@
 -promptperfectworld, 757846314
 -480, 796564511
 -nologstdiotofile, 803571430
--reduceecoreusage, 828789371
 -adapter, 871401063
--noassetbrowser, 876441444
 -notoolsdev, 885745964
 -fake_steam_china, 896260251
 -skip_driver_check, 921320528
@@ -58,7 +56,6 @@
 -breakimmediately, 1112866904
 -allow_non_tools_paths, 1133895985
 -favor_consistent_framerate, 1137193026
--tournament_extra_casters_slots, 1161064268
 -empty, 1166302021
 -vconsole, 1170955440
 -h, 1193756079
@@ -78,9 +75,7 @@
 -nopvs, 1526890664
 -usebuildversion, 1561231826
 -disable_shader_compile_wait, 1575789442
--worldwide, 1596223310
 -w, 1610683921
--consolelog_notimestamp, 1615887145
 -flushlog, 1663315727
 -warmtime, 1734994539
 -nv, 1751934355

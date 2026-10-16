@@ -1,0 +1,13 @@
+-tools, 197456290
+-workshop_items, 637050054
+-spacewalkcamera, 727455807
+-hlvr_workshop, 1296365088
+-sse4, 1849011768
+-smoothtoolcamera, 2258526725
+-item_file, 2362716718
+-vsync, 2767798943
+-sse3, 2776830954
+-avx, 3020312170
+-no_hierarchical_vpk_memory_mapping, 3378808146
+-net_codegen_debugfield, 3489200015
+-sse2, 4274893216

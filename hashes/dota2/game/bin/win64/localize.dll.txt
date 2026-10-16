@@ -1,0 +1,10 @@
+-tools, 197456290
+-ccsyntax, 390511131
+-all_languages, 455342288
+-textsublanguage, 1755977669
+2038783773
+-textlanguage, 2115173857
+-disablelocalization, 2145831849
+-language, 3191848936
+-enablejongsung, 3217666393
+-perfectworld, 3451720338

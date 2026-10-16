@@ -1,0 +1,13 @@
+-immediate_language_change, 181688885
+-tools, 197456290
+-nojoy, 754777372
+-panorama_nosinglecontext, 799337197
+-joy, 1345706809
+-sse4, 1849011768
+-noime, 2357129268
+-use_panel_id_in_rt_name, 2763451158
+-sse3, 2776830954
+-avx, 3020312170
+-nopanoramajoy, 3470642579
+-panoramajoy, 3573945171
+-sse2, 4274893216
