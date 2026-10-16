@@ -104,3 +104,8 @@ launch-option-hash-techniques.md
 updater/bin/
 updater/obj/
 binaries/
+.update.env
+
+# task scheduler + logs
+scripts/
+logs/

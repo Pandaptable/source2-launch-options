@@ -16,6 +16,7 @@
 // Usage: dotnet run -c Release [-- <outputRoot> [--login|--anonymous]]
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using SteamKit2.Authentication;
 using SteamKit2;
@@ -170,13 +171,19 @@ async Task PasswordLogOn(bool silent = false)
 
         // The console authenticator prompts for device confirmations and
         // email/2FA codes on its own; remembered GuardData skips the email
-        // code on later logins.
+        // Use the .maFile authenticator when available (fully headless);
+        // fall back to console prompts for interactive --login.
+        var maFile = Path.Join(outputRoot, "steamguard.maFile");
+        IAuthenticator authenticator = File.Exists(maFile)
+            ? new MaFileAuthenticator(maFile)
+            : new UserConsoleAuthenticator();
+
         var session = await steamClient.Authentication.BeginAuthSessionViaCredentialsAsync(new AuthSessionDetails
         {
             Username = username,
             Password = password,
             GuardData = config.GuardData,
-            Authenticator = new UserConsoleAuthenticator(),
+            Authenticator = authenticator,
             DeviceFriendlyName = "updater",
             IsPersistentSession = true,
         });
@@ -229,10 +236,25 @@ async Task HandleLoggedOn(SteamUser.LoggedOnCallback cb)
     {
         if (cb.Result == EResult.AccessDenied && logonMode == "token")
         {
-            if (config.Password is not null)
+            var maFile = Path.Join(outputRoot, "steamguard.maFile");
+
+            if (config.Password is not null && File.Exists(maFile))
             {
-                // The client disconnects after a failed logon; reconnect
-                // and re-authenticate on the fresh connection.
+                // Direct CM logon with password + TOTP from the maFile.
+                // No auth session = no phone push.
+                Console.WriteLine("Token expired; direct logon (no push)");
+                var auth = new MaFileAuthenticator(maFile);
+                logonDetails = new SteamUser.LogOnDetails
+                {
+                    Username = config.AccountName,
+                    Password = config.Password,
+                    TwoFactorCode = auth.GenerateCode(),
+                    ShouldRememberPassword = true,
+                };
+                steamUser.LogOn(logonDetails);
+            }
+            else if (config.Password is not null)
+            {
                 Console.WriteLine("Token expired; reconnecting to re-authenticate");
                 logonMode = "reauth";
                 steamClient.Disconnect();
@@ -245,6 +267,20 @@ async Task HandleLoggedOn(SteamUser.LoggedOnCallback cb)
                 cancellationToken.Cancel();
             }
             return;
+        }
+
+        if (cb.Result == EResult.AccountLoginDeniedNeedTwoFactor && logonMode == "token")
+        {
+            var maFile = Path.Join(outputRoot, "steamguard.maFile");
+            if (File.Exists(maFile))
+            {
+                Console.WriteLine("2FA rejected, retrying with fresh code...");
+                Thread.Sleep(2000);
+                var auth = new MaFileAuthenticator(maFile);
+                logonDetails.TwoFactorCode = auth.GenerateCode();
+                steamUser.LogOn(logonDetails);
+                return;
+            }
         }
 
         if (cb.Result != EResult.OK)
@@ -581,4 +617,58 @@ class BuildInfo
     public uint DepotId { get; set; }
     public ulong BuildId { get; set; }
     public ulong ManifestId { get; set; }
+}
+
+/// <summary>
+/// Authenticator that generates Steam Guard codes locally from a .maFile
+/// (Steam Guard Mobile Authenticator export). No phone push, no prompts.
+/// Place the file at <c>binaries/steamguard.maFile</c> (gitignored).
+/// </summary>
+class MaFileAuthenticator : IAuthenticator
+{
+    private readonly byte[] _sharedSecret;
+
+    public MaFileAuthenticator(string maFilePath)
+    {
+        using var doc = JsonDocument.Parse(File.ReadAllText(maFilePath));
+        var secret = doc.RootElement.GetProperty("shared_secret").GetString()
+            ?? throw new InvalidOperationException("maFile missing shared_secret");
+        _sharedSecret = Convert.FromBase64String(secret);
+    }
+
+    public Task<string> GetDeviceCodeAsync(bool previousCodeWasIncorrect)
+        => Task.FromResult(GenerateCode());
+
+    public Task<string> GetEmailCodeAsync(string email, bool previousCodeWasIncorrect)
+        => Task.FromResult<string>(null!);
+
+    public Task<bool> AcceptDeviceConfirmationAsync()
+        => Task.FromResult(false);
+
+    /// <summary>Steam Guard TOTP code from the shared secret.</summary>
+    public string GenerateCode()
+    {
+        var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds() / 30;
+        var timeBytes = BitConverter.GetBytes(time);
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(timeBytes);
+
+        using var hmac = new HMACSHA1(_sharedSecret);
+        var hash = hmac.ComputeHash(timeBytes);
+
+        var start = hash[19] & 0x0F;
+        var code = ((hash[start] & 0x7F) << 24)
+                 | ((hash[start + 1] & 0xFF) << 16)
+                 | ((hash[start + 2] & 0xFF) << 8)
+                 | (hash[start + 3] & 0xFF);
+
+        const string chars = "23456789BCDFGHJKMNPQRTVWXY";
+        var sb = new StringBuilder(5);
+        for (var i = 0; i < 5; i++)
+        {
+            sb.Append(chars[code % chars.Length]);
+            code /= chars.Length;
+        }
+        return sb.ToString();
+    }
 }

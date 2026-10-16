@@ -7,6 +7,12 @@
 #   --login      pass --login to the updater (first run, or after token expiry)
 #
 # unknown hashes are printed but never block the commit.
+#
+# Env vars (set in shell profile / cron, never hardcoded here):
+#   COMMIT_NAME   - override commit author name (e.g. "pandaptbot")
+#   COMMIT_EMAIL  - override commit author email (e.g. "pandaptbot@users.noreply.github.com")
+#   PUSH_REMOTE   - remote to push to after committing (e.g. "bot")
+# Without these, commits use your normal git identity and stay local.
 
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -64,7 +70,12 @@ https://steamdb.info/patchnotes/$build/
 "
 			fi
 		done
-		git commit -m "$msg"
+		if [[ -n "${COMMIT_NAME:-}" && -n "${COMMIT_EMAIL:-}" ]]; then
+			git -c user.name="$COMMIT_NAME" -c user.email="$COMMIT_EMAIL" commit -m "$msg"
+		else
+			git commit -m "$msg"
+		fi
+		[[ -n "${PUSH_REMOTE:-}" ]] && git push "$PUSH_REMOTE" HEAD:main
 		git log -1 --stat | head -8
 	fi
 fi
