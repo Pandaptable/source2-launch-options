@@ -76,7 +76,7 @@
 -retail, 2772236617
 -sse3, 2776830954
 -allsymdetailed, 2820614380
-2867015682
+--geoview-persistent-hidden-ids, 2867015682
 -rs_reset, 2885683845
 -shelpers_dwarf_symbol_path, 2927921579
 -type, 2959074205

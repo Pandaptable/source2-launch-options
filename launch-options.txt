@@ -31,6 +31,7 @@
 +sv_dev_simulate_gcdown
 +sv_pure
 --debug_game_event_list
+--geoview-persistent-hidden-ids
 --legacy_asset_live_preview
 --pulse_verbose
 -1080
@@ -109,6 +110,7 @@
 -assetinit
 -assetmergegameother
 -assettargetgameroot
+-assetthumbnails_forcetimeout
 -asset_diagnostic
 -asyncconsole
 -async_memory_map
@@ -191,6 +193,7 @@
 -chatwheel_pingwheel
 -check
 -checkforuniquemeshneeds
+-checkmapforissues
 -check_mesh_compression
 -citadel_local_lobby
 -citadel_local_report_port
@@ -1187,6 +1190,7 @@
 -skipcommondmxwrite
 -skiploadingworkshopaddons
 -skiptype
+-skip_deleting_old_temp_files
 -skip_download_player_info
 -skip_driver_check
 -slang

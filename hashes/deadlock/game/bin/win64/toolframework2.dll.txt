@@ -1,5 +1,5 @@
 -tools, 197456290
-564320376
+-skip_deleting_old_temp_files, 564320376
 -generatethumbnailsclear, 721986684
 -enable_qaccessible, 1129441271
 -generatethumbnailsmaxtime, 1236174432
