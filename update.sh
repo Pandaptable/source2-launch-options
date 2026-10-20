@@ -3,8 +3,7 @@
 #
 # usage: ./update.sh [--no-fetch] [--commit]
 #
-# Prerequisite: SteamFileDownloader on PATH (or edit SFD below), logged in
-# once via "SteamFileDownloader login" for deadlock access.
+# Prerequisite: SteamFileDownloader on PATH, logged in once ("SteamFileDownloader login").
 
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -22,13 +21,20 @@ done
 SFD="${SFD:-SteamFileDownloader}"
 OUT="depots"
 
+declare -A DEPOT_TO_GAME=([2347771]="cs2" [373303]="dota2" [1422452]="deadlock")
+declare -A APPS=([cs2]=730 [dota2]=570 [deadlock]=1422450)
+
+# [250831]="steamvr" [546563]="hla"
+# [steamvr]=250820 [hla]=546560
+# 250820/250831 546560/546563
+
 if (( FETCH )); then
-	echo "--- fetch"
-	"$SFD" get 730/2347771 570/373303 1422450/1422452 250820/250831 --output "$OUT" \
-		-- 'regex:bin/(win64|linuxsteamrt64?)/(.*/)?(?!(lib)?(qt5|qt6|sdl2|sdl3|openimagedenoise|openvdb|cri|lgt|vcruntime|msvcp|concrt|dbghelp|d3d|dxgi|nvapi|amd|amdxc|nvngx|nvcompiler|nvcuda|avcodec|avformat|avutil|swscale|swresample|freetype|harfbuzz|libzip|mysql|ssl|crypto|zlib|python3|tbb|embree|oidn|openal|ak_))[^/]*\.(dll|exe|so)$' \
+	"$SFD" get 730/2347771 570/373303 1422450/1422452  --output "$OUT" \
+		-- 'regex:game/bin/win64/[^/]+\.(dll|exe|so)$' 'regex:game/bin/win64/(tools|subtools)/[^/]+\.(dll|exe)$' \
 		2>&1 | grep -E "^Files:|::error::" || true
 fi
-declare -A DEPOT_TO_GAME=([2347771]="cs2" [373303]="dota2" [1422452]="deadlock" [250831]="steamvr")
+
+echo "--- dump"
 total=0
 for depot_dir in "$OUT"/*/; do
 	depot=$(basename "$depot_dir")
@@ -43,7 +49,7 @@ echo "--- resolve"
 python mc.py -d hashes -f launch-options.txt | tail -1
 
 echo "--- unknown"
-grep -hroE "^[0-9]+" hashes 2>/dev/null | sort -u > unmapped.txt
+grep -hroE "^[0-9]+" hashes/cs2 hashes/dota2 hashes/deadlock hashes/steamvr 2>/dev/null | sort -u > unmapped.txt
 echo "$(wc -l < unmapped.txt) unmapped (unmapped.txt)"
 
 if (( COMMIT )); then
@@ -55,9 +61,16 @@ if (( COMMIT )); then
 	for game in cs2 dota2 deadlock steamvr; do
 		files=$(git diff --cached --name-only -- "hashes/$game/" 2>/dev/null | wc -l)
 		(( files > 0 )) || continue
+		build=$("$SFD" depots "${APPS[$game]}" 2>&1 | grep -o 'build [0-9]*' | head -1 | grep -o '[0-9]*' || echo "?")
 		sample=$(git diff --cached --name-only -- "hashes/$game/" 2>/dev/null | sed "s|^hashes/$game/||" | head -3 | paste -sd,)
-		msg+="$game ($files files | $sample...)
+		if [[ "$build" != "?" && "$build" != "0" ]]; then
+			msg+="$game ($build | $files files | $sample...)
+https://steamdb.info/patchnotes/$build/
 "
+		else
+			msg+="$game (unknown build | $files files | $sample...)
+"
+		fi
 	done
 	if [[ -n "${COMMIT_NAME:-}" && -n "${COMMIT_EMAIL:-}" ]]; then
 		git -c user.name="$COMMIT_NAME" -c user.email="$COMMIT_EMAIL" commit -m "$msg"
