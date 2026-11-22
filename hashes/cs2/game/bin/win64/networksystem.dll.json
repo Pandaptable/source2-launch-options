@@ -1,0 +1,266 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1800E23A5",
+      "fn": "0x1800E20D0"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1801C1722",
+      "fn": "0x1801C1430"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1801C2349",
+      "fn": "0x1801C2160"
+    },
+    {
+      "hash": 408722138,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004BA0B",
+      "fn": "0x18004B9B0"
+    },
+    {
+      "hash": 618699380,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800A2114",
+      "fn": "0x1800A2064"
+    },
+    {
+      "hash": 840611758,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800A2180",
+      "fn": "0x1800A2064"
+    },
+    {
+      "hash": 840611758,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x1800A21C3",
+      "fn": "0x1800A2190"
+    },
+    {
+      "hash": 1056346854,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800F3CED",
+      "fn": "0x1800F3C00"
+    },
+    {
+      "hash": 1345726466,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800A20A8",
+      "fn": "0x1800A2064"
+    },
+    {
+      "hash": 1495259235,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x1800F3E88",
+      "fn": "0x1800F3C00"
+    },
+    {
+      "hash": 1541785958,
+      "slot": 80,
+      "method": "int",
+      "gate": "locked",
+      "value": true,
+      "va": "0x1800A20F3",
+      "fn": "0x1800A2064"
+    },
+    {
+      "hash": 1673231537,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800AECB8",
+      "fn": "0x1800AEC12"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180005463",
+      "fn": "0x180005390"
+    },
+    {
+      "hash": 2125205728,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800A2084",
+      "fn": "0x1800A2064"
+    },
+    {
+      "hash": 2140081723,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800F5428",
+      "fn": "0x1800F53B4"
+    },
+    {
+      "hash": 2140081723,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800F5B02",
+      "fn": "0x1800F5A80"
+    },
+    {
+      "hash": 2140666982,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800A201F",
+      "fn": "0x1800A2000"
+    },
+    {
+      "hash": 2140666982,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x1800A2047",
+      "fn": "0x1800A2000"
+    },
+    {
+      "hash": 2361825402,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800A2138",
+      "fn": "0x1800A2064"
+    },
+    {
+      "hash": 2431048809,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800F58D8",
+      "fn": "0x1800F543A"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180005439",
+      "fn": "0x180005390"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000548D",
+      "fn": "0x180005390"
+    },
+    {
+      "hash": 3371237308,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800F57DF",
+      "fn": "0x1800F543A"
+    },
+    {
+      "hash": 3371237308,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800F5C57",
+      "fn": "0x1800F5C17"
+    },
+    {
+      "hash": 3451720338,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1800F565C",
+      "fn": "0x1800F543A"
+    },
+    {
+      "hash": 4002657759,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800A215C",
+      "fn": "0x1800A2064"
+    },
+    {
+      "hash": 4228365612,
+      "slot": 80,
+      "method": "int",
+      "gate": "locked",
+      "value": true,
+      "va": "0x1800A20CF",
+      "fn": "0x1800A2064"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000540F",
+      "fn": "0x180005390"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "advapi32.dll",
+    "ws2_32.dll",
+    "steam_api64.dll",
+    "steamnetworkingsockets.dll",
+    "tier0.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": []
+}

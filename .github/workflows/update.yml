@@ -1,0 +1,74 @@
+name: Update dumps
+
+on:
+  repository_dispatch:
+    types: [update]
+  workflow_dispatch:
+    inputs:
+      appid:
+        description: "Steam app ID (730=CS2, 570=Dota2, 1422450=Deadlock, 250820=SteamVR, 546560=HLA)"
+        required: true
+        default: "730"
+      branch:
+        description: "Steam branch"
+        required: false
+        default: "public"
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install gh
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update && sudo apt install -y gh
+
+      - name: Download dumper
+        run: |
+          mkdir -p find-hashes/bin
+          gh release download dumper --repo "${{ github.repository }}" --pattern "cs-hash-reversal-linux" --dir find-hashes/bin
+          chmod +x find-hashes/bin/cs-hash-reversal-linux
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Download SteamFileDownloader
+        run: |
+          gh release download --repo SteamTracking/SteamFileDownloader --pattern "steamfiledownloader-linux-x64.tar.gz" --dir /tmp/sfd
+          tar xzf /tmp/sfd/steamfiledownloader-linux-x64.tar.gz -C /tmp/sfd
+          sudo cp /tmp/sfd/SteamFileDownloader /usr/local/bin/
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Configure git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Download app ${{ github.event.client_payload.appid || inputs.appid }}
+        env:
+          STEAM_USERNAME: ${{ secrets.STEAM_USERNAME }}
+          STEAM_PASSWORD: ${{ secrets.STEAM_PASSWORD }}
+        run: |
+          APPID="${{ github.event.client_payload.appid || inputs.appid }}"
+          BRANCH="${{ github.event.client_payload.branch || inputs.branch || 'public' }}"
+          SteamFileDownloader track --username "$STEAM_USERNAME" --password "$STEAM_PASSWORD" \
+            --appid "$APPID" --output depots --branch "$BRANCH"
+
+      - name: Run update script
+        env:
+          APPID: ${{ github.event.client_payload.appid || inputs.appid }}
+        run: ./update.sh --commit

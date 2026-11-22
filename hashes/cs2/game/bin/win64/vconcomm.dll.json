@@ -1,0 +1,111 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180010B49",
+      "fn": "0x180010960"
+    },
+    {
+      "hash": 397274668,
+      "slot": 176,
+      "method": "int",
+      "gate": "open",
+      "value": true,
+      "va": "0x18000585F",
+      "fn": "0x180005800"
+    },
+    {
+      "hash": 574071661,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1800010D8",
+      "fn": "0x1800010B0"
+    },
+    {
+      "hash": 1129441271,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000679B",
+      "fn": "0x180006530"
+    },
+    {
+      "hash": 1170955440,
+      "slot": 152,
+      "method": "index",
+      "gate": "open",
+      "value": false,
+      "va": "0x180005D5A",
+      "fn": "0x180005800"
+    },
+    {
+      "hash": 1170955440,
+      "slot": 176,
+      "method": "int",
+      "gate": "open",
+      "value": true,
+      "va": "0x180005DBB",
+      "fn": "0x180005800"
+    },
+    {
+      "hash": 1647506426,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180005D79",
+      "fn": "0x180005800"
+    },
+    {
+      "hash": 2372379517,
+      "slot": 152,
+      "method": "index",
+      "gate": "open",
+      "value": false,
+      "va": "0x180005D38",
+      "fn": "0x180005800"
+    },
+    {
+      "hash": 2372379517,
+      "slot": 176,
+      "method": "int",
+      "gate": "open",
+      "value": true,
+      "va": "0x180005D9B",
+      "fn": "0x180005800"
+    },
+    {
+      "hash": 3008056938,
+      "slot": 176,
+      "method": "int",
+      "gate": "open",
+      "value": true,
+      "va": "0x18000583D",
+      "fn": "0x180005800"
+    },
+    {
+      "hash": 4060445725,
+      "slot": 176,
+      "method": "int",
+      "gate": "open",
+      "value": true,
+      "va": "0x1800058A1",
+      "fn": "0x180005800"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "user32.dll",
+    "ws2_32.dll",
+    "tier0.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": []
+}

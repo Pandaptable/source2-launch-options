@@ -1,0 +1,95 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1801D7AF9",
+      "fn": "0x1801D7910"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1801E6232",
+      "fn": "0x1801E5F40"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004B873",
+      "fn": "0x18004B7A0"
+    },
+    {
+      "hash": 1906756612,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180063F09",
+      "fn": "0x180063E90"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004B849",
+      "fn": "0x18004B7A0"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004B89D",
+      "fn": "0x18004B7A0"
+    },
+    {
+      "hash": 3108076155,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18006CBD4",
+      "fn": "0x18006CBB0"
+    },
+    {
+      "hash": 3378808146,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800522F9",
+      "fn": "0x1800522E0"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004B81F",
+      "fn": "0x18004B7A0"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "phonon.dll",
+    "tier0.dll",
+    "kernel32.dll",
+    "user32.dll",
+    "advapi32.dll",
+    "ws2_32.dll"
+  ],
+  "dynamic": []
+}

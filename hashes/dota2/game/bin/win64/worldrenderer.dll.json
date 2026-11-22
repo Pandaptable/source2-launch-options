@@ -1,0 +1,118 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1800F4402",
+      "fn": "0x1800F4110"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1800F4F79",
+      "fn": "0x1800F4D90"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180002BD3",
+      "fn": "0x180002B00"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800B951C",
+      "fn": "0x1800B9440"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180002BA9",
+      "fn": "0x180002B00"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800B94F2",
+      "fn": "0x1800B9440"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180002BFD",
+      "fn": "0x180002B00"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800B9546",
+      "fn": "0x1800B9440"
+    },
+    {
+      "hash": 3489200015,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x18009236B",
+      "fn": "0x180091D40"
+    },
+    {
+      "hash": 3489200015,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x180095AEB",
+      "fn": "0x1800954E0"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180002B7F",
+      "fn": "0x180002B00"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800B94C8",
+      "fn": "0x1800B9440"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "tier0.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": []
+}

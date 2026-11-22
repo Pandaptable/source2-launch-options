@@ -1,25 +1,9 @@
-//! Executable-section scanning for CCommandLine token sites.
-//!
-//! The scanner understands the three ways modules reach the command line:
-//!
-//! * **IAT call/load** — `call [rip+IAT]` / `mov reg, [rip+IAT]` through an
-//!   imported `CommandLine` (every module but tier0 itself);
-//! * **export call** — a direct `call rel32` to tier0's own exported
-//!   `CommandLine` leaf (`lea rax, [rip+obj]; ret`);
-//! * **global ref** — `lea reg, [rip+obj]` referencing the statically
-//!   allocated CCommandLine object directly (fully inlined access).
-//!
-//! From an origin it tracks the object pointer through register moves,
-//! derives the vtable (`mov t, [obj]`) and slot functions
-//! (`mov t, [vtable+slot]`), and records a token site only when the
-//! indirect call goes through a known token slot with an immediate in
-//! EDX. Sites whose token is produced by calling a murmur-hash helper
-//! over a string literal get that name recovered automatically.
 
 use crate::murmur::token_hash;
 use crate::slots::{TokenMethod, token_method};
+use serde::Serialize;
 use iced_x86::{Decoder, DecoderOptions, Instruction, Mnemonic, OpKind, Register};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// A discovered launch-option token site.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -31,6 +15,38 @@ pub struct Site {
 	pub va: u64,
 	/// Option name recovered from a runtime-hashed string literal.
 	pub name: Option<String>,
+	/// Whether this call reads a value after the token. `None` when the
+	/// method is value-capable but the value argument could not be resolved.
+	pub value: Option<bool>,
+	/// One copy of an inlined helper: the same instruction shape appears
+	/// in three or more functions of this module.
+	pub inlined: bool,
+}
+
+/// How a site's result combines with a later site's in the same function.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Relation {
+	/// The later site is only reached when the earlier one succeeded (&&).
+	Requires,
+	/// The later site is only reached when the earlier one failed (||).
+	Alternative,
+	/// `a && !b`: both jumps leave to the same target with opposite
+	/// flavors, so the later option negates the earlier one (the -no
+	/// family, like -nop4 under -p4).
+	Negates,
+}
+
+/// A directed relation between two token sites: `later` relates to `earlier`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+pub struct SiteRelation {
+	/// Hash of the option whose check comes first.
+	pub earlier: u64,
+	/// Hash of the option whose check comes second and is conditional.
+	pub later: u64,
+	pub relation: Relation,
+	/// VA of the conditional jump that established the relation.
+	pub branch_va: u64,
 }
 
 /// Section mapping used to translate VAs to file offsets.
@@ -77,6 +93,10 @@ pub struct ScanConfig {
 	pub export_vas: Vec<u64>,
 	/// VAs of the statically allocated CCommandLine object.
 	pub global_vas: Vec<u64>,
+	/// VAs of module-local globals caching a CCommandLine pointer: the
+	/// object was acquired through a known origin at init and stored.
+	/// `mov reg, [rip+X]` on these yields the object pointer.
+	pub cached_vas: Vec<u64>,
 	/// VAs of murmur-hash helper functions (string -> token in EAX).
 	pub murmur_vas: Vec<u64>,
 	/// Wrapper function entry -> token slot it consumes (pass 2).
@@ -106,7 +126,7 @@ pub struct ParamSite {
 
 /// Picks the exports that produce a CCommandLine object from (name, rva)
 /// pairs: `CommandLine` (the leaf accessor) and `CreateCommandLine`
-/// (constructs and returns a new one — vconsole2 parses commands with
+/// (constructs and returns a new one; vconsole2 parses commands with
 /// it). `FreeCommandLine` / `V_SanitizeTextForCommandLine` are ignored.
 pub fn command_line_exports<'a, I: IntoIterator<Item = (&'a str, u64)>>(
 	exports: I,
@@ -153,12 +173,10 @@ pub fn scan_text_with_params(
 	let mut murmur_names: HashMap<u64, String> = HashMap::new();
 
 	for (idx, ins) in insns.iter().enumerate() {
-		// ---- pass-2 origin: direct call into a token wrapper ----
 		if ins.mnemonic() == Mnemonic::Call
 			&& is_direct_branch(ins)
 			&& let Some(&slot) = wrapper_map.get(&ins.near_branch_target())
 		{
-			// The caller's token immediate sits just before the call.
 			for b in insns[idx.saturating_sub(8)..idx].iter().rev() {
 				let writes_rdx = b.mnemonic() == Mnemonic::Mov
 					&& b.op0_kind() == OpKind::Register
@@ -171,13 +189,14 @@ pub fn scan_text_with_params(
 							method: token_method(slot),
 							va: ins.ip(),
 							name: None,
+							value: value_of_method(token_method(slot), None),
+							inlined: false,
 						});
 					}
 					break;
 				}
 			}
 		}
-		// ---- origin discovery ----
 		let mut state: Option<HashMap<Register, Val>> = None;
 
 		if ins.is_ip_rel_memory_operand() {
@@ -187,7 +206,6 @@ pub fn scan_text_with_params(
 				if ins.mnemonic() == Mnemonic::Call {
 					st.insert(Register::RAX, Val::Obj);
 				} else if ins.op0_kind() == OpKind::Register {
-					// mov reg, [rip+IAT]: reg now holds the leaf fn pointer
 					st.insert(base(ins.op0_register()), Val::LeafFn);
 				}
 				state = Some(st);
@@ -196,11 +214,16 @@ pub fn scan_text_with_params(
 				if ins.mnemonic() == Mnemonic::Lea && ins.op0_kind() == OpKind::Register {
 					st.insert(base(ins.op0_register()), Val::Obj);
 				} else if ins.mnemonic() == Mnemonic::Mov && ins.op0_kind() == OpKind::Register {
-					// mov reg, [rip+obj]: first qword of the object is the vtable
 					st.insert(base(ins.op0_register()), Val::Vtable);
 				}
 				state = Some(st);
+		} else if cfg.cached_vas.contains(&target) {
+			if ins.mnemonic() == Mnemonic::Mov && ins.op0_kind() == OpKind::Register {
+				let mut st = HashMap::new();
+				st.insert(base(ins.op0_register()), Val::Obj);
+				state = Some(st);
 			}
+		}
 		} else if is_direct_branch(ins) {
 			let target = ins.near_branch_target();
 			if cfg.export_vas.contains(&target) && ins.mnemonic() == Mnemonic::Call {
@@ -208,25 +231,22 @@ pub fn scan_text_with_params(
 				st.insert(Register::RAX, Val::Obj);
 				state = Some(st);
 			}
-		} else if ins.mnemonic() == Mnemonic::Call
-			&& matches!(ins.op0_kind(), OpKind::Memory | OpKind::Register)
-			&& callret_is_object(&insns, idx)
-		{
-			// Indirect call whose return value is immediately treated as
-			// the CCommandLine object (the "callv:0x88" getter pattern in
-			// assetsystem): `mov T, [rax]` within three instructions.
-			let mut st = HashMap::new();
-			st.insert(Register::RAX, Val::Obj);
-			state = Some(st);
-		}
+	} else if ins.mnemonic() == Mnemonic::Call
+		&& ins.op0_kind() == OpKind::Memory
+		&& base(ins.memory_base()) != Register::None
+		&& !ins.is_ip_rel_memory_operand()
+		&& ins.memory_displacement64() as i64 == 0x88
+		&& callret_is_object(&insns, idx)
+	{
+		let mut st = HashMap::new();
+		st.insert(Register::RAX, Val::Obj);
+		state = Some(st);
+	}
 
 		let Some(mut st) = state else { continue };
 
-		// Token immediates are often loaded before the origin (the object
-		// or vtable acquisition). Seed what the registers held just above.
 		preseed(&insns[..idx], &mut st);
 
-		// ---- forward tracking window ----
 		let mut saw_call = false;
 		'window: for step in 1..=window {
 			let Some(ins) = insns.get(idx + step) else {
@@ -253,32 +273,25 @@ pub fn scan_text_with_params(
 								_ => None,
 							};
 							match token_imm {
-								Some(hash) => sites.push(Site {
-									hash,
-									slot,
-									method: token_method(slot),
-									va: ins.ip(),
-									name: murmur_names.get(&hash).cloned(),
-								}),
-								// The token register holds something else
-								// (often the vtable) and no call has
-								// clobbered it since the origin: the token
-								// is an incoming parameter of the enclosing
-								// function -> wrapper candidate.
+							Some(hash) => sites.push(Site {
+								hash,
+								slot,
+								method: token_method(slot),
+								va: ins.ip(),
+								name: murmur_names.get(&hash).cloned(),
+								value: value_of_method(token_method(slot), st.get(&Register::R8)),
+								inlined: false,
+							}),
 								None if !saw_call => {
 									param_sites.push(ParamSite { va: ins.ip(), slot })
 								}
 								None => {}
 							}
-							// An indirect tail-jmp leaves the function; a
-							// near jmp is usually a branch around dead
-							// bytes, so tracking continues past it.
 							if ins.mnemonic() == Mnemonic::Jmp && !is_direct_branch(ins) {
 								break 'window;
 							}
 						}
 						Dispatch::MurmurOrExport => {
-							// resolved by apply_call_effects below
 						}
 						Dispatch::Other => {}
 					}
@@ -289,9 +302,6 @@ pub fn scan_text_with_params(
 					}
 				}
 				_ => {
-					// Any other instruction that writes a register kills
-					// our knowledge of it. Pure readers (cmp/test/push/...)
-					// are left alone.
 					if ins.op0_kind() == OpKind::Register && writes_op0(ins) {
 						st.remove(&base(ins.op0_register()));
 					}
@@ -411,27 +421,17 @@ fn callret_is_object(insns: &[Instruction], idx: usize) -> bool {
 }
 
 fn is_plausible_token(hash: u64) -> bool {
-	// MurmurHash2 outputs are uniform over u32; genuine tokens below
-	// 0x100000 (or exactly u32::MAX) are a ~1e-6 proposition, while those
-	// values are extremely common as generic constants (4096, 95000, -1).
 	if !(0x10_0000..u64::from(u32::MAX)).contains(&hash) {
 		return false;
 	}
-	// Bit-count floor: murmur outputs are uniform, so <6 bits set is
-	// ~3e-4 — flag constants like 0x20000020 (2 bits) can't be tokens.
 	let bits = hash.count_ones();
 	if bits < 6 {
 		return false;
 	}
-	// FourCC reject: all 4 bytes printable ASCII means it's a tag
-	// constant ('NETC', 'vmat', etc.), not a hash.
 	let b = (hash as u32).to_le_bytes();
 	if b.iter().all(|&c| c.is_ascii_graphic()) {
 		return false;
 	}
-	// Verified noise (IDA-checked, not a blind blocklist): registry
-	// lookup keys and token sentinels from other murmur namespaces that
-	// share the call shape with real token sites.
 	!matches!(hash, 832_154_671 | 1_977_497_166 | 2_000_000)
 }
 
@@ -448,9 +448,6 @@ fn writes_op0(ins: &Instruction) -> bool {
 			| Mnemonic::Prefetcht2
 			| Mnemonic::Prefetchnta
 			| Mnemonic::Prefetchw
-			// CMOVcc only conditionally overwrites its destination; the
-			// surviving value is the pre-cmov one in the branch that
-			// reaches a token site (null-guard pattern in tier0).
 			| Mnemonic::Cmovo
 			| Mnemonic::Cmovno
 			| Mnemonic::Cmovb
@@ -484,8 +481,6 @@ fn preseed(prev: &[Instruction], st: &mut HashMap<Register, Val>) {
 		Register::R11,
 	];
 	let mut settled = std::collections::HashSet::new();
-	// Only entries preseed itself adds may be withdrawn again; values
-	// derived from the origin (object, vtable, leaf, call return) win.
 	let mut seeded: Vec<Register> = Vec::new();
 	for ins in prev.iter().rev().take(12) {
 		if ins.mnemonic() == Mnemonic::Call {
@@ -509,7 +504,6 @@ fn preseed(prev: &[Instruction], st: &mut HashMap<Register, Val>) {
 			st.insert(dst, Val::Imm(ins.immediate64()));
 			seeded.push(dst);
 		}
-		// Any other write leaves the register unknown (absent).
 	}
 }
 fn apply_mov(ins: &Instruction, st: &mut HashMap<Register, Val>) {
@@ -573,7 +567,6 @@ fn apply_lea(ins: &Instruction, st: &mut HashMap<Register, Val>, global_vas: &[u
 			st.insert(dst, Val::Str(target));
 		}
 	} else if base(ins.memory_base()) != Register::None {
-		// lea reg, [obj] copies the object pointer; anything else is unknown.
 		if ins.memory_displacement64() == 0 && st.get(&base(ins.memory_base())) == Some(&Val::Obj) {
 			st.insert(dst, Val::Obj);
 		} else {
@@ -614,17 +607,12 @@ fn apply_call_effects(
 	cfg: &ScanConfig,
 	murmur_names: &mut HashMap<u64, String>,
 ) {
-	// Only real calls have call semantics. A near jmp that the window
-	// continues through does not return here and clobbers nothing in the
-	// linear model.
 	if ins.mnemonic() != Mnemonic::Call {
 		return;
 	}
 
-	// Snapshot argument registers before the call clobbers them.
 	let rcx_val = st.get(&Register::RCX).copied();
 
-	// Caller-saved registers die at every call.
 	for reg in [
 		Register::RAX,
 		Register::RCX,
@@ -637,7 +625,6 @@ fn apply_call_effects(
 		st.remove(&reg);
 	}
 
-	// Direct calls to known helpers produce known results in RAX.
 	if is_direct_branch(ins) {
 		let target = ins.near_branch_target();
 		if cfg.murmur_vas.contains(&target)
@@ -689,8 +676,6 @@ pub fn leaf_lea_target(view: &ModuleView, fn_va: u64, bitness: u32) -> Option<u6
 		match ins.mnemonic() {
 			Mnemonic::Lea if ins.is_ip_rel_memory_operand() => {
 				let target = ins.ip_rel_memory_address();
-				// Must be immediately followed by a return for this to be
-				// a leaf accessor, not a real function body.
 				let mut next = Instruction::default();
 				if decoder.can_decode() {
 					decoder.decode_out(&mut next);
@@ -755,6 +740,385 @@ pub fn find_murmur_fns(
 		.collect()
 }
 
+/// Value classification of a token method, refined by the R8 (ppszValue)
+/// state at a CheckParm call site: a non-null out pointer means the caller
+/// reads the argument after the token.
+// CheckParm's ppszValue (R8) distinguishes presence-only from value reads
+fn value_of_method(method: Option<TokenMethod>, r8: Option<&Val>) -> Option<bool> {
+	match method? {
+		TokenMethod::ParmValueBuffer
+		| TokenMethod::ParmValueFloat
+		| TokenMethod::ParmValueInt
+		| TokenMethod::ParmValueCStr => Some(true),
+		TokenMethod::HasParm | TokenMethod::FindParm => Some(false),
+		TokenMethod::CheckParm => match r8 {
+			Some(Val::Imm(0)) => Some(false),
+			Some(_) => Some(true),
+			None => None,
+		},
+	}
+}
+
+/// Whether a conditional jump leaves the block when its tested operand was
+/// zero ("jump on false"), the short-circuit shape of `a && b`, or when
+/// it was non-zero ("jump on true"), the shape of `a || b`.
+fn jump_flavor(ins: &Instruction) -> Option<bool> {
+	match ins.mnemonic() {
+		Mnemonic::Je | Mnemonic::Jbe | Mnemonic::Jl => Some(true),
+		Mnemonic::Jne | Mnemonic::Ja | Mnemonic::Jg => Some(false),
+		_ => None,
+	}
+}
+
+/// The first conditional jump that consumes a call's RAX result: a
+/// `test rax, rax` / `cmp rax, 0` followed by a branch, with nothing else
+/// clobbering RAX in between.
+fn consuming_jcc(insns: &[Instruction], idx: usize) -> Option<&Instruction> {
+	for ins in insns.iter().skip(idx + 1).take(6) {
+		match ins.mnemonic() {
+			Mnemonic::Test
+				if ins.op0_kind() == OpKind::Register
+					&& base(ins.op0_register()) == Register::RAX
+					&& ins.op1_kind() == OpKind::Register
+					&& base(ins.op1_register()) == Register::RAX => {}
+			Mnemonic::Cmp
+				if ins.op0_kind() == OpKind::Register
+					&& base(ins.op0_register()) == Register::RAX
+					&& is_imm_op(ins.op1_kind())
+					&& ins.immediate64() == 0 => {}
+			Mnemonic::Je | Mnemonic::Jne | Mnemonic::Ja | Mnemonic::Jg | Mnemonic::Jbe | Mnemonic::Jl => {
+				return Some(ins);
+			}
+			_ => {
+				if ins.op0_kind() == OpKind::Register
+					&& base(ins.op0_register()) == Register::RAX
+					&& writes_op0(ins)
+				{
+					return None;
+				}
+			}
+		}
+	}
+	None
+}
+
+/// Detects how token checks in the same function combine: `a && b`
+/// (Requires), `a || b` (Alternative) or `a && !b` (Negates).
+pub fn relations_pass(
+	view: &ModuleView,
+	text: &[u8],
+	text_va: u64,
+	bitness: u32,
+	functions: &[(u64, u64)],
+	sites: &[Site],
+) -> Vec<SiteRelation> {
+	if sites.len() < 2 {
+		return Vec::new();
+	}
+
+	let mut relations = Vec::new();
+
+	let mut by_fn: HashMap<(u64, u64), Vec<&Site>> = HashMap::new();
+	for site in sites {
+		if let Some(&(start, end)) = functions.iter().find(|&&(s, e)| site.va >= s && site.va < e) {
+			by_fn.entry((start, end)).or_default().push(site);
+		}
+	}
+
+	for ((start, end), mut fn_sites) in by_fn {
+		if fn_sites.len() < 2 {
+			continue;
+		}
+		fn_sites.sort_unstable_by_key(|s| s.va);
+
+		let Some(off) = view.va_to_offset(start) else {
+			continue;
+		};
+		let len = (end - start) as usize;
+		let bytes = &view.buffer[off..(off + len).min(view.buffer.len())];
+		let mut decoder = Decoder::with_ip(bitness, bytes, start, DecoderOptions::NONE);
+		let mut insns = Vec::with_capacity(bytes.len() / 4);
+		while decoder.can_decode() {
+			let mut ins = Instruction::default();
+			decoder.decode_out(&mut ins);
+			insns.push(ins);
+		}
+		let find = |va: u64| insns.iter().position(|i| i.ip() == va);
+
+		for w in 0..fn_sites.len().saturating_sub(1) {
+			let earlier = fn_sites[w];
+			let later = &fn_sites[w + 1];
+			let Some(idx) = find(earlier.va) else { continue };
+			let Some(jcc) = consuming_jcc(&insns, idx) else { continue };
+			let Some(flavor) = jump_flavor(jcc) else { continue };
+			let target = jcc.near_branch_target();
+			if target <= later.va || target >= end {
+				continue;
+			}
+			let later_flavor = find(later.va)
+				.and_then(|li| consuming_jcc(&insns, li))
+				.and_then(|lj| (lj.near_branch_target() == target).then_some(jump_flavor(lj))?);
+			let Some(later_flavor) = later_flavor else { continue };
+			let relation = match (flavor, later_flavor) {
+				(true, true) => Relation::Requires,
+				(false, false) => Relation::Alternative,
+				(_, _) => Relation::Negates,
+			};
+			relations.push(SiteRelation {
+				earlier: earlier.hash,
+				later: later.hash,
+				relation,
+				branch_va: jcc.ip(),
+			});
+		}
+	}
+
+	relations.sort_unstable();
+	relations.dedup();
+	relations
+}
+
+/// DLL names passed to LoadLibrary-family imports as string literals. A
+/// call through a LoadLibrary IAT slot whose RCX was set by a `lea` of a
+/// string is recorded; indirect names are not.
+pub fn find_dynamic_loads(
+	view: &ModuleView,
+	text: &[u8],
+	text_va: u64,
+	bitness: u32,
+	loadlibrary_iats: &[u64],
+) -> Vec<String> {
+	if loadlibrary_iats.is_empty() {
+		return Vec::new();
+	}
+
+	let mut decoder = Decoder::with_ip(bitness, text, text_va, DecoderOptions::NONE);
+	let mut insns = Vec::with_capacity(text.len() / 4);
+	while decoder.can_decode() {
+		let mut ins = Instruction::default();
+		decoder.decode_out(&mut ins);
+		insns.push(ins);
+	}
+
+	let mut names = Vec::new();
+	for (idx, ins) in insns.iter().enumerate() {
+		if ins.mnemonic() != Mnemonic::Call || !ins.is_ip_rel_memory_operand() {
+			continue;
+		}
+		if !loadlibrary_iats.contains(&ins.ip_rel_memory_address()) {
+			continue;
+		}
+		for b in insns[idx.saturating_sub(6)..idx].iter().rev() {
+			if b.mnemonic() == Mnemonic::Lea
+				&& b.is_ip_rel_memory_operand()
+				&& b.op0_kind() == OpKind::Register
+				&& base(b.op0_register()) == Register::RCX
+			{
+				if let Some(name) = view.read_cstr(b.ip_rel_memory_address()) {
+					if name.contains('.') && name.len() < 64 {
+						names.push(name.to_ascii_lowercase());
+					}
+				}
+				break;
+			}
+			if b.op0_kind() == OpKind::Register
+				&& base(b.op0_register()) == Register::RCX
+				&& b.mnemonic() != Mnemonic::Nop
+			{
+				break;
+			}
+		}
+	}
+	names.sort();
+	names.dedup();
+	names
+}
+
+/// Discovers module-local globals that cache the CCommandLine object
+/// pointer: a store to a rip-relative global whose value traces back to
+/// a known origin (IAT call return, export call return, or the static
+/// object). The global then becomes a valid origin for later reads.
+// Module init: call [rip+IAT_CommandLine] -> mov [rip+cached_global], rax
+// Later use: mov rcx, [rip+cached_global] -> vtable -> token slot call
+// The tracker can't follow this without knowing the cached global VA.
+pub fn discover_cached_globals(
+	text: &[u8],
+	text_va: u64,
+	bitness: u32,
+	cfg: &ScanConfig,
+) -> Vec<u64> {
+	let mut decoder = Decoder::with_ip(bitness, text, text_va, DecoderOptions::NONE);
+	let mut insns = Vec::with_capacity(text.len() / 4);
+	while decoder.can_decode() {
+		let mut ins = Instruction::default();
+		decoder.decode_out(&mut ins);
+		insns.push(ins);
+	}
+
+	let mut globals = Vec::new();
+	for (idx, ins) in insns.iter().enumerate() {
+		if ins.mnemonic() != Mnemonic::Mov
+			|| ins.op0_kind() != OpKind::Memory
+			|| !ins.is_ip_rel_memory_operand()
+			|| ins.op1_kind() != OpKind::Register
+		{
+			continue;
+		}
+		let store_target = ins.ip_rel_memory_address();
+		let src = base(ins.op1_register());
+
+		for b in insns[idx.saturating_sub(15)..idx].iter().rev() {
+			if b.mnemonic() == Mnemonic::Call {
+				break;
+			}
+			if b.is_ip_rel_memory_operand() && cfg.iat_vas.contains(&b.ip_rel_memory_address()) {
+				if b.mnemonic() == Mnemonic::Call && src == Register::RAX {
+					globals.push(store_target);
+					break;
+				}
+			}
+			if b.mnemonic() == Mnemonic::Lea
+				&& b.is_ip_rel_memory_operand()
+				&& cfg.global_vas.contains(&b.ip_rel_memory_address())
+				&& base(b.op0_register()) == src
+			{
+				globals.push(store_target);
+				break;
+			}
+			if b.mnemonic() == Mnemonic::Mov
+				&& b.op0_kind() == OpKind::Register
+				&& base(b.op0_register()) == src
+				&& b.op1_kind() == OpKind::Register
+				&& base(b.op1_register()) == Register::RAX
+			{
+				continue;
+			}
+		}
+	}
+	globals.sort_unstable();
+	globals.dedup();
+	globals
+}
+
+/// The token-slot displacement a call within a few instructions of `idx`
+/// goes through, and that call's VA: either a direct
+/// `call [reg + token_slot]` or a `call reg` where reg was loaded from
+/// `[vtable + token_slot]` in between.
+fn slot_call_near(insns: &[Instruction], idx: usize) -> Option<(u64, u64)> {
+	let mut slot_fn_reg: Option<(Register, u64)> = None;
+	for ins in insns.iter().skip(idx + 1).take(6) {
+		match ins.mnemonic() {
+			Mnemonic::Mov => {
+				if ins.op0_kind() == OpKind::Register && ins.op1_kind() == OpKind::Memory {
+					let disp = ins.memory_displacement64();
+					if token_method(disp).is_some() {
+						slot_fn_reg = Some((base(ins.op0_register()), disp));
+					}
+				}
+			}
+			Mnemonic::Call => match ins.op0_kind() {
+				OpKind::Memory => {
+					let disp = ins.memory_displacement64();
+					if token_method(disp).is_some() {
+						return Some((disp, ins.ip()));
+					}
+				}
+				OpKind::Register => {
+					let reg = base(ins.op0_register());
+					if let Some((r, disp)) = slot_fn_reg {
+						if r == reg {
+							return Some((disp, ins.ip()));
+						}
+					}
+				}
+				_ => {}
+			},
+			_ => {}
+		}
+	}
+	None
+}
+
+/// Post-pass: marks inlined-helper copies and recovers call sites of
+/// known tokens the origin tracker missed.
+// Recover missed call sites of known tokens: the tracker needs an origin
+// chain, but the token immediate + token-slot call shape is enough when
+// the hash is already proven to be a launch option.
+pub fn post_pass(
+	text: &[u8],
+	text_va: u64,
+	bitness: u32,
+	functions: &[(u64, u64)],
+	sites: &mut Vec<Site>,
+) {
+	let mut decoder = Decoder::with_ip(bitness, text, text_va, DecoderOptions::NONE);
+	let mut insns = Vec::with_capacity(text.len() / 4);
+	while decoder.can_decode() {
+		let mut ins = Instruction::default();
+		decoder.decode_out(&mut ins);
+		insns.push(ins);
+	}
+
+	let known: HashSet<(u64, u64)> = sites.iter().map(|s| (s.hash, s.va)).collect();
+	let known_hashes: HashSet<u64> = sites.iter().map(|s| s.hash).collect();
+	for (idx, ins) in insns.iter().enumerate() {
+		if ins.mnemonic() != Mnemonic::Mov
+			|| ins.op0_kind() != OpKind::Register
+			|| base(ins.op0_register()) != Register::RDX
+			|| !is_imm_op(ins.op1_kind())
+		{
+			continue;
+		}
+		let hash = ins.immediate64();
+		if !known_hashes.contains(&hash) {
+			continue;
+		}
+		let Some((slot, call_va)) = slot_call_near(&insns, idx) else {
+			continue;
+		};
+		if known.contains(&(hash, call_va)) {
+			continue;
+		}
+		sites.push(Site {
+			hash,
+			slot,
+			method: token_method(slot),
+			va: call_va,
+			name: None,
+			value: value_of_method(token_method(slot), None),
+			inlined: false,
+		});
+	}
+
+	let index_of = |va: u64| insns.iter().position(|i| i.ip() == va);
+	let fn_of = |va: u64| functions.iter().find(|&&(s, e)| va >= s && va < e);
+	let mut groups: HashMap<(u64, String), Vec<u64>> = HashMap::new();
+	for site in sites.iter() {
+		let Some(idx) = index_of(site.va) else { continue };
+		let start = idx.saturating_sub(5);
+		let shape: String = insns[start..=idx]
+			.iter()
+			.map(|i| format!("{:?}|", i.mnemonic()))
+			.collect();
+		groups.entry((site.hash, shape)).or_default().push(site.va);
+	}
+	let mut inlined_vas: HashSet<u64> = HashSet::new();
+	for vas in groups.values() {
+		let distinct_fns = vas.iter().filter_map(|&va| fn_of(va).map(|f| f.0)).collect::<HashSet<_>>();
+		if vas.len() >= 3 && distinct_fns.len() >= 3 {
+			inlined_vas.extend(vas);
+		}
+	}
+	for site in sites.iter_mut() {
+		if inlined_vas.contains(&site.va) {
+			site.inlined = true;
+		}
+	}
+
+	sites.sort_unstable_by_key(|s| (s.hash, s.slot, s.va));
+	sites.dedup_by_key(|s| (s.hash, s.slot, s.va));
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -781,7 +1145,6 @@ mod tests {
 	fn tier0_export_call_site_is_found() {
 		let text_va = BASE + 0x1000;
 		let export_va = BASE + 0x5C130;
-		// E8 <rel> where text_va+5+rel == export_va
 		let rel = (export_va - (text_va + 5)) as i32;
 		let mut text = vec![0xE8];
 		text.extend_from_slice(&rel.to_le_bytes());
@@ -811,7 +1174,6 @@ mod tests {
 	#[test]
 	fn engine2_iat_call_site_is_found() {
 		let text_va = BASE + 0x2000;
-		// ff 15 <disp32> : call [rip+disp]
 		let iat_va = text_va + 6 + 0x34_BC46;
 		let mut text = vec![0xFF, 0x15];
 		text.extend_from_slice(&0x34_BC46u32.to_le_bytes());
@@ -834,7 +1196,7 @@ mod tests {
 	}
 
 	/// Fully inlined access: lea rbx,[rip+obj]; mov rax,[rbx];
-	/// mov edx,imm; call [rax+0x18] — no call to CommandLine at all.
+	/// mov edx,imm; call [rax+0x18]: no call to CommandLine at all.
 	#[test]
 	fn global_ref_origin_is_tracked() {
 		let text_va = BASE + 0x3000;
@@ -891,7 +1253,6 @@ mod tests {
 		let str_va = BASE + 0x9000;
 		let murmur_va = BASE + 0x6000;
 		let obj_va = BASE + 0x7C000;
-		// lea rsi, [rip+obj]           (7 bytes, ends at +0x07)
 		let gdisp = (obj_va - (text_va + 7)) as i32;
 		let mut text = vec![0x48, 0x8D, 0x35];
 		text.extend_from_slice(&gdisp.to_le_bytes());
@@ -899,11 +1260,9 @@ mod tests {
 			0x48, 0x8B, 0x06, // +0x07 mov rax, [rsi]
 			0x48, 0x8B, 0xB8, 0x90, 0x00, 0x00, 0x00, // +0x0A mov rdi, [rax+0x90]
 		]);
-		// +0x11 lea rcx, [rip+str]     (7 bytes, ends at +0x18)
 		let sdisp = (str_va - (text_va + 0x11 + 7)) as i32;
 		text.extend_from_slice(&[0x48, 0x8D, 0x0D]);
 		text.extend_from_slice(&sdisp.to_le_bytes());
-		// +0x18 call murmur            (5 bytes, ends at +0x1D)
 		let rel = (murmur_va - (text_va + 0x18 + 5)) as i32;
 		text.extend_from_slice(&[0xE8]);
 		text.extend_from_slice(&rel.to_le_bytes());
@@ -942,7 +1301,6 @@ mod tests {
 
 	#[test]
 	fn pdata_entries_parse_to_ranges() {
-		// Two RUNTIME_FUNCTION triplets (start, end, unwind) at BASE+0x1000.
 		let mut pdata = Vec::new();
 		for (s, e) in [(0x1010u32, 0x10A0u32), (0x10B0u32, 0x1100u32)] {
 			pdata.extend_from_slice(&s.to_le_bytes());
@@ -962,8 +1320,6 @@ mod tests {
 
 	#[test]
 	fn murmur_fns_are_found_by_constant_density() {
-		// Function 0x1000-0x1080 with three 0x5BD1E995 imuls; neighbor
-		// 0x1100-0x1140 with only one must not qualify.
 		let text_va = BASE + 0x1000;
 		let mut text = vec![0u8; 0x1140];
 		for off in [0x10usize, 0x40, 0x70] {
@@ -1024,7 +1380,6 @@ mod tests {
 			0x89, 0xAB, 0x0C, 0x00, 0x00, 0x00, // +0x0C mov [rbx+0xC], ebp
 			0x48, 0x89, 0xB3, 0x10, 0x00, 0x00, 0x00, // +0x12 mov [rbx+0x10], rsi
 		];
-		// +0x19: mov rax, [rip+disp] — origin, vtable load
 		text.extend_from_slice(&[0x48, 0x8B, 0x05]);
 		text.extend_from_slice(&disp.to_le_bytes());
 		text.extend_from_slice(&[
@@ -1074,7 +1429,7 @@ mod tests {
 		let text_va = BASE + 0x9000;
 		let text: Vec<u8> = [
 			&[0x48, 0x8B, 0x03][..],              // mov rax, [rbx]
-			&[0xFF, 0x50, 0x88][..],              // call [rax+0x88]  (getter)
+			&[0xFF, 0x90, 0x88, 0x00, 0x00, 0x00][..], // call [rax+0x88]  (getter, disp32)
 			&[0xBA, 0x95, 0xFE, 0xB9, 0x37][..],  // mov edx, 0x37B9FE95
 			&[0x48, 0x8B, 0x08][..],              // mov rcx, [rax]
 			&[0x4C, 0x8B, 0x41, 0x20][..],        // mov r8, [rcx+0x20]
@@ -1095,7 +1450,7 @@ mod tests {
 
 	/// Real vconsole2 shape (fn 0x1400246B0, hashes 1226158575 /
 	/// 2959074205): the token sites are only reachable across an
-	/// unconditional near jmp — the bytes after the jmp are another
+	/// unconditional near jmp: the bytes after the jmp are another
 	/// branch target. The window must continue through near-direct
 	/// jumps (only indirect tail-jmps end tracking).
 	#[test]
@@ -1106,7 +1461,6 @@ mod tests {
 		let mut text = vec![0xFF, 0x15]; // call [rip+IAT]   -> rax = obj
 		text.extend_from_slice(&disp.to_le_bytes());
 		text.extend_from_slice(&[0x48, 0x8B, 0xF0]); // mov rsi, rax
-		// jmp +4 over four dead bytes
 		text.extend_from_slice(&[0xE9, 0x04, 0x00, 0x00, 0x00]);
 		text.extend_from_slice(&[0x90, 0x90, 0x90, 0x90]); // other block's code
 		text.extend_from_slice(&[
@@ -1132,8 +1486,6 @@ mod tests {
 	/// must never appear in the output.
 	#[test]
 	fn structural_noise_is_rejected() {
-		// Real engine2 shape but with a flag constant token — same lineage,
-		// implausible murmur output (2 bits set).
 		let text_va = BASE + 0xB000;
 		let iat_va = BASE + 0x60AF88;
 		let disp = (iat_va - (text_va + 6)) as i32;
@@ -1144,16 +1496,13 @@ mod tests {
 			0x48, 0x8B, 0xC8, // mov rcx, rax
 			0x48, 0x8B, 0x00, // mov rax, [rcx]... wait need vtable first
 		]);
-		// Simplify: just verify is_plausible_token via the noise test below
 		text.clear();
 
-		// Direct unit tests on the filter
 		assert!(!super::is_plausible_token(0x2000_0020), "2-bit flag constant");
 		assert!(!super::is_plausible_token(0x4E45_5443), "FourCC NETC");
 		assert!(!super::is_plausible_token(2_000_000), "sleep delay");
 		assert!(!super::is_plausible_token(832_154_671), "IDebugVisualizer registry key");
 		assert!(!super::is_plausible_token(1_977_497_166), "string-token sentinel");
-		// Real tokens still pass
 		assert!(super::is_plausible_token(3_199_111_094), "-clearassertstate");
 		assert!(super::is_plausible_token(197_456_290), "-tools");
 		assert!(super::is_plausible_token(150_269_7765), "-testmode_hide_invalid_content_sync_problems");

@@ -1,0 +1,76 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { reactRouter } from "@react-router/dev/vite";
+import wyw from "@wyw-in-js/vite";
+import { createLogger, defineConfig } from "vite";
+
+export default defineConfig(({ mode }) => {
+  const logger = createLogger();
+  const originalInfo = logger.info;
+  let prerenderCount = 0;
+  logger.info = (msg, options) => {
+    if (msg.startsWith("Prerender (html): ")) {
+      prerenderCount++;
+      if (prerenderCount % 1000 === 0) {
+        originalInfo(`Prerendered ${prerenderCount} pages...`, options);
+      }
+      return;
+    }
+    originalInfo(msg, options);
+  };
+
+  return {
+    customLogger: logger,
+    // Prerendering runs through a Vite preview server, so React Router's child
+    // compiler watches the project root. Without this, every prerendered page adds
+    // an fs.watch handle and a directory re-stat, which dominates the build.
+    server: { watch: { ignored: ["**/build/**"] } },
+    base: "/",
+    assetsInclude: ["schemas/*.json.gz"],
+    plugins: [
+      reactRouter(),
+      wyw({
+        include: "src/**/*.tsx",
+        // The hash separates same-named components in different files
+        classNameSlug: mode === "development" ? "[title]_[hash]" : "[hash]",
+        sourceMap: true,
+        // The site targets current browsers, which need no vendor prefixes
+        prefixer: false,
+        // The default "hybrid" strategy also resolves interpolations statically. In dev, it throws
+        // when that differs from evaluating them, even by whitespace or a component stub
+        eval: { strategy: "execute" },
+      }),
+      {
+        // sirv treats .gz files as pre-compressed and adds Content-Encoding: gzip,
+        // causing the browser to auto-decompress. Serve them ourselves instead.
+        name: "serve-gz-raw",
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            const match = req.url?.match(/\/schemas\/(\w+\.json\.gz)$/);
+            if (!match) return next();
+            try {
+              const data = readFileSync(resolve("schemas", match[1]));
+              res.setHeader("Content-Type", "application/gzip");
+              res.setHeader("Content-Length", data.length);
+              res.end(data);
+            } catch {
+              next();
+            }
+          });
+        },
+      },
+    ],
+    build: {
+      sourcemap: true,
+      // Current browsers only. The build does not rewrite or prefix the JS or the CSS for older ones
+      target: "esnext",
+      // Lists the licenses of the dependencies bundled into the site
+      license: { fileName: "licenses.md" },
+      // Emit the pre-hydration script as a standalone, cacheable file instead of
+      // inlining it as a data: URI. Inlining guesses the wrong MIME from the
+      // source extension and would duplicate the script across every prerendered
+      // page (tens of thousands of them).
+      assetsInlineLimit: (filePath) => (filePath.includes("search-prehydrate") ? false : undefined),
+    },
+  };
+});

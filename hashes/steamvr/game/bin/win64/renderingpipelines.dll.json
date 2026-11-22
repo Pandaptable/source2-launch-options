@@ -1,0 +1,56 @@
+{
+  "sites": [
+    {
+      "hash": 257476700,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180013080",
+      "fn": "0x1800112B5"
+    },
+    {
+      "hash": 1756881965,
+      "slot": 80,
+      "method": "int",
+      "gate": "locked",
+      "value": true,
+      "va": "0x1800128B5",
+      "fn": "0x1800112B5"
+    },
+    {
+      "hash": 2198908657,
+      "slot": 64,
+      "method": "string",
+      "gate": "locked",
+      "value": true,
+      "va": "0x18001B205",
+      "fn": "0x1800199E0"
+    },
+    {
+      "hash": 2420315247,
+      "slot": 80,
+      "method": "int",
+      "gate": "locked",
+      "value": true,
+      "va": "0x1800128CD",
+      "fn": "0x1800112B5"
+    },
+    {
+      "hash": 3274554851,
+      "slot": 64,
+      "method": "string",
+      "gate": "locked",
+      "value": true,
+      "va": "0x180013A63",
+      "fn": "0x1800112B5"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "kernel32.dll",
+    "tier0.dll",
+    "vstdlib.dll"
+  ],
+  "dynamic": []
+}

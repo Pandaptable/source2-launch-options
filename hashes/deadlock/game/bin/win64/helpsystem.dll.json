@@ -1,0 +1,59 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x18005B6D2",
+      "fn": "0x18005B3E0"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180001433",
+      "fn": "0x180001360"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180001409",
+      "fn": "0x180001360"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000145D",
+      "fn": "0x180001360"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800013DF",
+      "fn": "0x180001360"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "qt5core.dll",
+    "qt5gui.dll",
+    "qt5widgets.dll",
+    "tier0.dll",
+    "kernel32.dll",
+    "user32.dll"
+  ],
+  "dynamic": []
+}

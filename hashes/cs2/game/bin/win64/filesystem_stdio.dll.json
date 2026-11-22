@@ -1,0 +1,119 @@
+{
+  "sites": [
+    {
+      "hash": 89848572,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004E72C",
+      "fn": "0x18004E6A0"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x18011B632",
+      "fn": "0x18011B340"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x18011C159",
+      "fn": "0x18011BF70"
+    },
+    {
+      "hash": 797265055,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x180051217",
+      "fn": "0x1800511C8"
+    },
+    {
+      "hash": 1300049617,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004E74A",
+      "fn": "0x18004E6A0"
+    },
+    {
+      "hash": 1908792890,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18005449E",
+      "fn": "0x1800543E1"
+    },
+    {
+      "hash": 2432198044,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "inlined": true,
+      "va": "0x1800651DD",
+      "fn": "0x180065100"
+    },
+    {
+      "hash": 2432198044,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "inlined": true,
+      "va": "0x180065340",
+      "fn": "0x180065316"
+    },
+    {
+      "hash": 2432198044,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "inlined": true,
+      "va": "0x1800653F8",
+      "fn": "0x180065360"
+    },
+    {
+      "hash": 2432198044,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "inlined": true,
+      "va": "0x180065DF4",
+      "fn": "0x180065DCA"
+    },
+    {
+      "hash": 3378808146,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800498F9",
+      "fn": "0x1800498E0"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "steam_api64.dll",
+    "tier0.dll",
+    "kernel32.dll",
+    "user32.dll",
+    "advapi32.dll",
+    "ws2_32.dll"
+  ],
+  "dynamic": [
+    "advapi32.dll"
+  ]
+}

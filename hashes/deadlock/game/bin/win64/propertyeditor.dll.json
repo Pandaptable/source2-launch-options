@@ -1,0 +1,95 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1800C6732",
+      "fn": "0x1800C6440"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180001903",
+      "fn": "0x180001830"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800403CC",
+      "fn": "0x1800402F0"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800018D9",
+      "fn": "0x180001830"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800403A2",
+      "fn": "0x1800402F0"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000192D",
+      "fn": "0x180001830"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800403F6",
+      "fn": "0x1800402F0"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800018AF",
+      "fn": "0x180001830"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180040378",
+      "fn": "0x1800402F0"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "qt5core.dll",
+    "qt5gui.dll",
+    "qt5widgets.dll",
+    "tier0.dll",
+    "kernel32.dll",
+    "user32.dll"
+  ],
+  "dynamic": []
+}

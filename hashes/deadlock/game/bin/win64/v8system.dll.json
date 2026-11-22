@@ -1,0 +1,30 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180004139",
+      "fn": "0x180003F50"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180013632",
+      "fn": "0x180013340"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "tier0.dll",
+    "v8.dll",
+    "v8_libplatform.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": []
+}

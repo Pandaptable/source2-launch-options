@@ -1,0 +1,120 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180646532",
+      "fn": "0x180646240"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180002113",
+      "fn": "0x180002040"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800B810C",
+      "fn": "0x1800B8030"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800020E9",
+      "fn": "0x180002040"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800B80E2",
+      "fn": "0x1800B8030"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000213D",
+      "fn": "0x180002040"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800B8136",
+      "fn": "0x1800B8030"
+    },
+    {
+      "hash": 3944507073,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800148C7",
+      "fn": "0x1800143E0"
+    },
+    {
+      "hash": 3944507073,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18001758D",
+      "fn": "0x18001755C"
+    },
+    {
+      "hash": 3944507073,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180017E7E",
+      "fn": "0x180017E4D"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800020BF",
+      "fn": "0x180002040"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800B80B8",
+      "fn": "0x1800B8030"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "tier0.dll",
+    "kernel32.dll",
+    "user32.dll",
+    "embree3.dll"
+  ],
+  "dynamic": []
+}

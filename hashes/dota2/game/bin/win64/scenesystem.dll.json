@@ -1,0 +1,106 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1804E5182",
+      "fn": "0x1804E4E90"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1804F3699",
+      "fn": "0x1804F34B0"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180013D93",
+      "fn": "0x180013CC0"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1804C5C6C",
+      "fn": "0x1804C5B90"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180013D69",
+      "fn": "0x180013CC0"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1804C5C42",
+      "fn": "0x1804C5B90"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180013DBD",
+      "fn": "0x180013CC0"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1804C5C96",
+      "fn": "0x1804C5B90"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180013D3F",
+      "fn": "0x180013CC0"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1804C5C18",
+      "fn": "0x1804C5B90"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "user32.dll",
+    "tier0.dll",
+    "kernel32.dll",
+    "shell32.dll",
+    "imm32.dll",
+    "gdi32.dll"
+  ],
+  "dynamic": [
+    "shcore.dll"
+  ]
+}

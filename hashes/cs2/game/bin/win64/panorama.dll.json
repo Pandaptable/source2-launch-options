@@ -1,0 +1,160 @@
+{
+  "sites": [
+    {
+      "hash": 181688885,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18016E7A9",
+      "fn": "0x18016E750"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1803DC7F2",
+      "fn": "0x1803DC500"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1803EC8B9",
+      "fn": "0x1803EC6D0"
+    },
+    {
+      "hash": 754777372,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180132F57",
+      "fn": "0x180132E50"
+    },
+    {
+      "hash": 799337197,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800EF5B1",
+      "fn": "0x1800EE3A0"
+    },
+    {
+      "hash": 1345706809,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180132EF6",
+      "fn": "0x180132E50"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18006CBF3",
+      "fn": "0x18006CB20"
+    },
+    {
+      "hash": 2357129268,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180092F2B",
+      "fn": "0x180092F16"
+    },
+    {
+      "hash": 2763451158,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180070574",
+      "fn": "0x180070150"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18006CBC9",
+      "fn": "0x18006CB20"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18006CC1D",
+      "fn": "0x18006CB20"
+    },
+    {
+      "hash": 3470642579,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180132F15",
+      "fn": "0x180132E50"
+    },
+    {
+      "hash": 3573945171,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180132F34",
+      "fn": "0x180132E50"
+    },
+    {
+      "hash": 3573945171,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180132F76",
+      "fn": "0x180132E50"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18006CB9F",
+      "fn": "0x18006CB20"
+    }
+  ],
+  "relations": [
+    {
+      "earlier": 754777372,
+      "later": 3573945171,
+      "relation": "negates",
+      "branch_va": 6443708252
+    }
+  ],
+  "imports": [
+    "user32.dll",
+    "winmm.dll",
+    "sdl3.dll",
+    "steam_api64.dll",
+    "tier0.dll",
+    "v8.dll",
+    "video64.dll",
+    "kernel32.dll",
+    "advapi32.dll",
+    "ws2_32.dll"
+  ],
+  "dynamic": []
+}

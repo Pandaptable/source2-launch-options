@@ -1,0 +1,44 @@
+{
+  "sites": [
+    {
+      "hash": 53536153,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180001835",
+      "fn": "0x1800017E0"
+    },
+    {
+      "hash": 2133286778,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180001851",
+      "fn": "0x1800017E0"
+    },
+    {
+      "hash": 3299646795,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180001870",
+      "fn": "0x1800017E0"
+    }
+  ],
+  "relations": [
+    {
+      "earlier": 2133286778,
+      "later": 3299646795,
+      "relation": "negates",
+      "branch_va": 6442457174
+    }
+  ],
+  "imports": [
+    "tier0.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": []
+}

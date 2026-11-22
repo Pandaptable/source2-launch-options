@@ -1,21 +1,74 @@
 use anyhow::{Context, Result};
 use cs_hash_reversal::scan::{
-	ModuleView, ScanConfig, SectionMap, Site, command_line_exports, find_murmur_fns,
-	leaf_lea_target, parse_pdata, wrapper_pass,
+	ModuleView, ScanConfig, SectionMap, Site, SiteRelation, command_line_exports, find_dynamic_loads,
+	find_murmur_fns, leaf_lea_target, parse_pdata, post_pass, relations_pass, wrapper_pass,
+	discover_cached_globals,
 };
+use cs_hash_reversal::slots::is_locked_slot;
 use goblin::pe::PE;
 use goblin::pe::section_table::IMAGE_SCN_MEM_EXECUTE;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::env;
 use std::fs::{self, OpenOptions};
-use std::io::Write;
+use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
+
+fn load_launch_options(path: &Path) -> HashMap<u64, String> {
+	let mut map = HashMap::new();
+	if let Ok(f) = fs::File::open(path) {
+		for line in BufReader::new(f).lines().map_while(Result::ok) {
+			let line = line.trim();
+			if line.is_empty() {
+				continue;
+			}
+			if let Some((name, hash)) = line.rsplit_once(", ") {
+				if let Ok(h) = hash.trim().parse::<u64>() {
+					map.entry(h).or_insert_with(|| name.trim().to_string());
+				}
+			}
+		}
+	}
+	map
+}
+
+/// One token site as written to the per-module JSON sidecar.
+#[derive(serde::Serialize)]
+struct SiteJson {
+	hash: u64,
+	slot: u64,
+	method: &'static str,
+	/// "locked": only answers with -tools/-dedicated/-insecure (or the
+	/// GPU env overrides / Source2Launcher host). "open": always answers.
+	gate: &'static str,
+	/// Whether this call reads a value after the token, when known.
+	value: Option<bool>,
+	/// One copy of an inlined helper stamped across functions.
+	#[serde(skip_serializing_if = "std::ops::Not::not")]
+	inlined: bool,
+	va: String,
+	/// Start of the enclosing function, when .pdata covers it.
+	#[serde(rename = "fn")]
+	fn_va: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	name: Option<String>,
+}
+
+#[derive(serde::Serialize)]
+struct ModuleJson {
+	sites: Vec<SiteJson>,
+	relations: Vec<SiteRelation>,
+	/// DLL names from the PE import table.
+	imports: Vec<String>,
+	/// DLL names passed to LoadLibrary calls as string literals.
+	dynamic: Vec<String>,
+}
 
 fn main() -> Result<()> {
 	let mut target_dir = String::new();
 	let mut base_dir_arg = String::new();
 	let mut output_dir_arg = String::from("./hashes");
+	let mut names_path = String::new();
 	let mut debug_mode = false;
 
 	let mut exclude_patterns: Vec<String> = vec!["import_scripts".to_string(), "csdm".to_string()];
@@ -24,6 +77,14 @@ fn main() -> Result<()> {
 	while let Some(arg) = args.next() {
 		match arg.as_str() {
 			"-debug" => debug_mode = true,
+			"--names" | "-n" => {
+				if let Some(p) = args.next() {
+					names_path = p;
+				} else {
+					println!("[-] Error: --names requires a path to launch-options.txt.");
+					return Ok(());
+				}
+			}
 			"--base" => {
 				if let Some(base) = args.next() {
 					base_dir_arg = base;
@@ -87,6 +148,11 @@ fn main() -> Result<()> {
 		fs::create_dir_all(out_path).context("Failed to create output directory")?;
 	}
 
+	let names = if names_path.is_empty() {
+		HashMap::new()
+	} else {
+		load_launch_options(Path::new(&names_path))
+	};
 	for entry in WalkDir::new(target_dir_path)
 		.into_iter()
 		.filter_map(|e| e.ok())
@@ -110,13 +176,14 @@ fn main() -> Result<()> {
 
 			println!("\n[*] Analyzing {}...", path.display());
 
-			if let Err(e) = process_dll(
-				path,
-				target_dir_path,
-				&base_dir_arg,
-				&output_dir_arg,
-				debug_mode,
-			) {
+		if let Err(e) = process_dll(
+			path,
+			target_dir_path,
+			&base_dir_arg,
+			&output_dir_arg,
+			debug_mode,
+			&names,
+		) {
 				println!("[-] Failed to process {}: {}", path.display(), e);
 			}
 		}
@@ -135,6 +202,7 @@ fn process_dll(
 	base_dir_arg: &str,
 	output_dir_arg: &str,
 	debug_mode: bool,
+	names: &HashMap<u64, String>,
 ) -> Result<()> {
 	let buffer = fs::read(dll_path)?;
 
@@ -149,14 +217,25 @@ fn process_dll(
 	let image_base = pe.image_base as u64;
 	let bitness = if pe.is_64 { 64 } else { 32 };
 
-	// Origins: the imported accessors (every module), tier0's own exports,
-	// and the statically allocated CCommandLine object the leaf returns.
-	// `CreateCommandLine` also returns a CCommandLine (a fresh one), which
-	// vconsole2 uses to parse commands.
 	let mut iat_vas = Vec::new();
+	let mut imports: Vec<String> = Vec::new();
+	let mut loadlibrary_iats = Vec::new();
 	for import in pe.imports.iter() {
-		if import.name.as_ref() == "CommandLine" || import.name.as_ref() == "CreateCommandLine" {
-			iat_vas.push(image_base + import.offset as u64);
+		let name: &str = import.name.as_ref();
+		let dll: &str = import.dll.as_ref();
+		let dll = dll.to_ascii_lowercase();
+		if !imports.contains(&dll) {
+			imports.push(dll);
+		}
+		let is_commandline = name == "CommandLine" || name == "CreateCommandLine";
+		let is_loadlibrary = name.starts_with("LoadLibrary");
+		if is_commandline || is_loadlibrary {
+			let va = image_base + import.offset as u64;
+			if is_commandline {
+				iat_vas.push(va);
+			} else {
+				loadlibrary_iats.push(va);
+			}
 		}
 	}
 	let export_vas = command_line_exports(
@@ -169,8 +248,6 @@ fn process_dll(
 	{
 		let view = module_view(&pe, &buffer, image_base);
 		for &eva in &export_vas {
-			// Only the `CommandLine` accessor has the lea/ret leaf shape;
-			// CreateCommandLine is a real function and will not match.
 			if let Some(obj_va) = leaf_lea_target(&view, eva, bitness) {
 				global_vas.push(obj_va);
 			}
@@ -184,8 +261,6 @@ fn process_dll(
 
 	let view = module_view(&pe, &buffer, image_base);
 
-	// Function bounds from .pdata, used for murmur-helper discovery and
-	// cached-getter (wrapper) propagation.
 	let functions: Vec<(u64, u64)> = pe
 		.sections
 		.iter()
@@ -197,7 +272,11 @@ fn process_dll(
 			parse_pdata(&view, &buffer[start..end], image_base)
 		})
 		.unwrap_or_default();
+
+	let mut cached_vas: Vec<u64> = Vec::new();
 	let mut all_sites: Vec<Site> = Vec::new();
+	let mut relations: Vec<SiteRelation> = Vec::new();
+	let mut dynamic: Vec<String> = Vec::new();
 
 	for section in &pe.sections {
 		if (section.characteristics & IMAGE_SCN_MEM_EXECUTE) == 0 {
@@ -219,25 +298,57 @@ fn process_dll(
 			.filter(|(s, e)| *s >= section_va && *e <= section_va + size as u64)
 			.collect();
 
+		let section_cached = discover_cached_globals(section_data, section_va, bitness, &ScanConfig {
+			iat_vas: iat_vas.clone(),
+			export_vas: export_vas.clone(),
+			global_vas: global_vas.clone(),
+			cached_vas: Vec::new(),
+			murmur_vas: Vec::new(),
+			wrappers: Vec::new(),
+			window: 0,
+		});
+		for g in section_cached {
+			if !cached_vas.contains(&g) {
+				cached_vas.push(g);
+			}
+		}
 		let murmur_vas = find_murmur_fns(section_data, section_va, &section_fns, 3);
 
 		let cfg = ScanConfig {
 			iat_vas: iat_vas.clone(),
 			export_vas: export_vas.clone(),
 			global_vas: global_vas.clone(),
+			cached_vas: cached_vas.clone(),
 			murmur_vas,
 			wrappers: Vec::new(),
 			window: 120,
 		};
 
-		all_sites.extend(wrapper_pass(
+		let mut section_sites = wrapper_pass(
 			&view,
 			section_data,
 			section_va,
 			bitness,
 			&cfg,
 			&functions,
+		);
+		post_pass(section_data, section_va, bitness, &functions, &mut section_sites);
+		relations.extend(relations_pass(
+			&view,
+			section_data,
+			section_va,
+			bitness,
+			&functions,
+			&section_sites,
 		));
+		dynamic.extend(find_dynamic_loads(
+			&view,
+			section_data,
+			section_va,
+			bitness,
+			&loadlibrary_iats,
+		));
+		all_sites.extend(section_sites);
 	}
 
 	if all_sites.is_empty() {
@@ -245,7 +356,6 @@ fn process_dll(
 		return Ok(());
 	}
 
-	// One line per hash; sites collapse to the first occurrence.
 	let mut by_hash: BTreeMap<u64, &Site> = BTreeMap::new();
 	for site in &all_sites {
 		by_hash.entry(site.hash).or_insert(site);
@@ -311,6 +421,7 @@ fn process_dll(
 
 	let hash_count = by_hash.len();
 
+
 	for (hash, site) in &by_hash {
 		if debug_mode {
 			let method = site.method.map(|m| m.label()).unwrap_or("unknown-method");
@@ -324,10 +435,40 @@ fn process_dll(
 				"{} // slot 0x{:X} {} @ 0x{:X}{}",
 				hash, site.slot, method, site.va, name
 			)?;
+		} else if let Some(name) = names.get(hash) {
+			writeln!(file, "{}, {}", name, hash)?;
 		} else {
 			writeln!(file, "{}", hash)?;
 		}
 	}
+
+	let sites_json: Vec<SiteJson> = all_sites
+		.iter()
+		.map(|s| SiteJson {
+			hash: s.hash,
+			slot: s.slot,
+			method: s.method.map(|m| m.label()).unwrap_or("unknown"),
+			gate: if is_locked_slot(s.slot) { "locked" } else { "open" },
+			value: s.value,
+			inlined: s.inlined,
+			va: format!("0x{:X}", s.va),
+			fn_va: functions
+				.iter()
+				.find(|&&(start, end)| s.va >= start && s.va < end)
+				.map(|&(start, _)| format!("0x{:X}", start)),
+			name: s.name.clone(),
+		})
+		.collect();
+	let module_json = ModuleJson {
+		sites: sites_json,
+		relations,
+		imports,
+		dynamic,
+	};
+	let mut sidecar_path = final_out_path.clone();
+	sidecar_path.set_extension("json");
+	fs::write(&sidecar_path, serde_json::to_vec_pretty(&module_json)?)
+		.context(format!("Failed to write {}", sidecar_path.display()))?;
 
 	println!(
 		"[+] Found and exported {} unique hashes to {}.",

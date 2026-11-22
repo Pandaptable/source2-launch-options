@@ -62,6 +62,7 @@
 -noinitfallbacktextures, 2462688185
 -vulkan_disable_ext_pipeline_creation_cache_control, 2479980372
 -vulkan_disable_khr_synchronization2, 2537109703
+-shadercache_dir, 2568441053
 -vulkan_validation_error_exit_success, 2601499734
 -vulkan_disable_khr_shader_clock, 2626482410
 -reflex, 2642521732

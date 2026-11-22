@@ -1,0 +1,216 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180578489",
+      "fn": "0x1805782A0"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180578F02",
+      "fn": "0x180578C10"
+    },
+    {
+      "hash": 564320376,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004BEF8",
+      "fn": "0x18004BEB0"
+    },
+    {
+      "hash": 721986684,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180045C8C",
+      "fn": "0x180045B0A"
+    },
+    {
+      "hash": 1129441271,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004785F",
+      "fn": "0x1800476D0"
+    },
+    {
+      "hash": 1236174432,
+      "slot": 80,
+      "method": "int",
+      "gate": "locked",
+      "value": true,
+      "va": "0x180045C6E",
+      "fn": "0x180045B0A"
+    },
+    {
+      "hash": 1321118783,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x1800464CD",
+      "fn": "0x180045B0A"
+    },
+    {
+      "hash": 1336680278,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004A758",
+      "fn": "0x18004A720"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180002633",
+      "fn": "0x180002560"
+    },
+    {
+      "hash": 1873549870,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180045C1A",
+      "fn": "0x180045B0A"
+    },
+    {
+      "hash": 1937712909,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180045BF8",
+      "fn": "0x180045B0A"
+    },
+    {
+      "hash": 2160483264,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180046842",
+      "fn": "0x180045B0A"
+    },
+    {
+      "hash": 2189129855,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18052C5CC",
+      "fn": "0x18052C5B0"
+    },
+    {
+      "hash": 2245844626,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004672C",
+      "fn": "0x180045B0A"
+    },
+    {
+      "hash": 2383142401,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x180045C40",
+      "fn": "0x180045B0A"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180002609",
+      "fn": "0x180002560"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000265D",
+      "fn": "0x180002560"
+    },
+    {
+      "hash": 3317354165,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004685D",
+      "fn": "0x180045B0A"
+    },
+    {
+      "hash": 4118096054,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800478B0",
+      "fn": "0x1800476D0"
+    },
+    {
+      "hash": 4261927495,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18004688C",
+      "fn": "0x180045B0A"
+    },
+    {
+      "hash": 4267361586,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180047782",
+      "fn": "0x1800476D0"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800025DF",
+      "fn": "0x180002560"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "advapi32.dll",
+    "libfbxsdk_2020_3_1.dll",
+    "qt5core.dll",
+    "qt5gui.dll",
+    "qt5widgets.dll",
+    "ws2_32.dll",
+    "tier0.dll",
+    "kernel32.dll",
+    "user32.dll",
+    "shlwapi.dll"
+  ],
+  "dynamic": []
+}

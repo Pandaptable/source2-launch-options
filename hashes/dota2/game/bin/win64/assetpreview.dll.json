@@ -1,0 +1,187 @@
+{
+  "sites": [
+    {
+      "hash": 162242015,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1806BD86D",
+      "fn": "0x1806BD810"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1806822C2",
+      "fn": "0x180681FD0"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180682EE9",
+      "fn": "0x180682D00"
+    },
+    {
+      "hash": 727455807,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1806CC2CC",
+      "fn": "0x1806CC220"
+    },
+    {
+      "hash": 1424991031,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180025C2D",
+      "fn": "0x180025BD0"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180004883",
+      "fn": "0x1800047B0"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18021A2BC",
+      "fn": "0x18021A1E0"
+    },
+    {
+      "hash": 2258526725,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1806CC2A9",
+      "fn": "0x1806CC220"
+    },
+    {
+      "hash": 2525252510,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "inlined": true,
+      "va": "0x1807265F7",
+      "fn": "0x180726586"
+    },
+    {
+      "hash": 2525252510,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "inlined": true,
+      "va": "0x180727016",
+      "fn": "0x180726E30"
+    },
+    {
+      "hash": 2525252510,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "inlined": true,
+      "va": "0x180727C14",
+      "fn": "0x180727BA0"
+    },
+    {
+      "hash": 2767798943,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1806CC02F",
+      "fn": "0x1806CBE54"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180004859",
+      "fn": "0x1800047B0"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18021A292",
+      "fn": "0x18021A1E0"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800048AD",
+      "fn": "0x1800047B0"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18021A2E6",
+      "fn": "0x18021A1E0"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000482F",
+      "fn": "0x1800047B0"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18021A268",
+      "fn": "0x18021A1E0"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "qt5core.dll",
+    "qt5gui.dll",
+    "qt5widgets.dll",
+    "tier0.dll",
+    "winsqlite3.dll",
+    "kernel32.dll",
+    "user32.dll",
+    "embree3.dll",
+    "advapi32.dll",
+    "ws2_32.dll",
+    "secur32.dll",
+    "crypt32.dll",
+    "bcrypt.dll",
+    "iphlpapi.dll"
+  ],
+  "dynamic": []
+}

@@ -1,0 +1,36 @@
+{
+  "sites": [
+    {
+      "hash": 1894315094,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x18002C1FD",
+      "fn": "0x18002C140"
+    },
+    {
+      "hash": 4294967293,
+      "slot": 160,
+      "method": "string",
+      "gate": "open",
+      "value": true,
+      "va": "0x1801336DC",
+      "fn": "0x1801335D0"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "user32.dll",
+    "advapi32.dll",
+    "ws2_32.dll",
+    "wininet.dll",
+    "steam_api64.dll",
+    "tier0.dll",
+    "vstdlib.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": [
+    "dwmapi.dll"
+  ]
+}

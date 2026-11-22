@@ -1,0 +1,119 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x18003A9E9",
+      "fn": "0x18003A800"
+    },
+    {
+      "hash": 407190304,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x18001A107",
+      "fn": "0x180019FE0"
+    },
+    {
+      "hash": 536865351,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18001A1F5",
+      "fn": "0x180019FE0"
+    },
+    {
+      "hash": 553687688,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180022B57",
+      "fn": "0x180022A20"
+    },
+    {
+      "hash": 553687688,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180022D0D",
+      "fn": "0x180022B80"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180001AA3",
+      "fn": "0x1800019D0"
+    },
+    {
+      "hash": 2114520145,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18001A1A8",
+      "fn": "0x180019FE0"
+    },
+    {
+      "hash": 2564211422,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18001A256",
+      "fn": "0x180019FE0"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180001A79",
+      "fn": "0x1800019D0"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180001ACD",
+      "fn": "0x1800019D0"
+    },
+    {
+      "hash": 4216380365,
+      "slot": 72,
+      "method": "float",
+      "gate": "locked",
+      "value": true,
+      "va": "0x18001A1CE",
+      "fn": "0x180019FE0"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180001A4F",
+      "fn": "0x1800019D0"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "advapi32.dll",
+    "tier0.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": []
+}

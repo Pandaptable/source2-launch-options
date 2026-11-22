@@ -1,0 +1,197 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { styled } from "@linaria/react";
+import { NavBar } from "./NavBar";
+import { SidebarWrapper } from "./Sidebar";
+import { SidebarTop } from "./SidebarTop";
+import { SearchContext } from "../search/SearchContext";
+import { DeclarationsContext, type GameContext } from "../OptionsContext";
+import { useHashParam } from "../../utils/filtering";
+
+/** The game's data and the #search= text, for everything on a page */
+export function PageProviders({ context, children }: { context: GameContext; children: React.ReactNode }) {
+  const search = useHashParam("search") ?? "";
+  const searchCtx = useMemo(() => ({ search }), [search]);
+  return (
+    <DeclarationsContext.Provider value={context}>
+      <SearchContext.Provider value={searchCtx}>{children}</SearchContext.Provider>
+    </DeclarationsContext.Provider>
+  );
+}
+
+/**
+ * Sidebar on the left, navbar and content on the right. On mobile the sidebar
+ * becomes a drawer opened from the navbar menu button.
+ */
+export function PageShell({
+  count,
+  show,
+  sidebar,
+  children,
+}: {
+  /** The page's result count while searching, or everything it filters itself */
+  count?: string;
+  /** The page's show filters, under the games where they stay in view */
+  show?: React.ReactNode;
+  /** The page's own list, below the games */
+  sidebar: (drawer: { onNavigate: () => void }) => React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+  const openSidebar = useCallback(() => setSidebarOpen(true), []);
+
+  // Focus moves into the drawer and returns to where it was when the drawer closes
+  // close requests dismiss it instead of navigating away.
+  // While the mobile drawer is open, a CloseWatcher lets the back gesture, Escape, and other
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    panelRef.current?.focus();
+
+    let watcher: CloseWatcher | undefined;
+    // Closes on an Escape nothing else handled, and cancels it
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      e.preventDefault();
+      closeSidebar();
+    };
+    if (typeof CloseWatcher !== "undefined") {
+      watcher = new CloseWatcher();
+      watcher.onclose = closeSidebar;
+    } else {
+      document.addEventListener("keydown", onKeyDown);
+    }
+    return () => {
+      watcher?.destroy();
+      document.removeEventListener("keydown", onKeyDown);
+      previous?.focus({ preventScroll: true });
+    };
+  }, [sidebarOpen, closeSidebar]);
+
+  return (
+    <PageGrid>
+      <MobileSidebarOverlay data-open={sidebarOpen || undefined} onClick={closeSidebar} />
+      <SidebarPanel
+        ref={panelRef}
+        data-open={sidebarOpen || undefined}
+        tabIndex={sidebarOpen ? -1 : undefined}
+        role={sidebarOpen ? "dialog" : undefined}
+        aria-modal={sidebarOpen || undefined}
+        aria-label={sidebarOpen ? "Sidebar" : undefined}
+      >
+        <SidebarWrapper aria-label="Sidebar">
+          <SidebarTop onNavigate={closeSidebar} sidebarOpen={sidebarOpen} show={show} />
+          {sidebar({ onNavigate: closeSidebar })}
+        </SidebarWrapper>
+      </SidebarPanel>
+      <ContentColumn>
+        <NavBar onMenuClick={openSidebar} />
+        {children}
+      </ContentColumn>
+    </PageGrid>
+  );
+}
+
+const ContentColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding-right: 32px;
+
+  @media (max-width: 768px) {
+    padding: 0 8px;
+  }
+`;
+
+// hides them once the closing transition ends, which also keeps the drawer out of the tab order
+// The overlay and the drawer stay rendered while closed so they can animate both ways. Visibility
+const MobileSidebarOverlay = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 300;
+    /* Only a tap closes the drawer. Swiping on it doesn't scroll the page behind */
+    touch-action: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 200ms ease,
+      visibility 0s 200ms;
+
+    &[data-open] {
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity 300ms ease,
+        visibility 0s;
+    }
+  }
+`;
+
+const SidebarPanel = styled.div`
+  display: contents;
+
+  &:focus {
+    outline: none;
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 300px;
+    z-index: 301;
+    background: var(--sidebar);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 200ms var(--ease-out),
+      visibility 0s 200ms;
+
+    &[data-open] {
+      transform: none;
+      visibility: visible;
+      transition:
+        transform 300ms var(--ease-drawer),
+        visibility 0s;
+    }
+  }
+
+  @media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+    transform: none;
+    opacity: 0;
+    transition:
+      opacity 150ms ease,
+      visibility 0s 150ms;
+
+    &[data-open] {
+      opacity: 1;
+      transition:
+        opacity 150ms ease,
+        visibility 0s;
+    }
+  }
+`;
+
+const PageGrid = styled.div`
+  display: grid;
+  grid-template-columns: 372px 1fr;
+  min-height: 100dvh;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 300px 1fr;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;

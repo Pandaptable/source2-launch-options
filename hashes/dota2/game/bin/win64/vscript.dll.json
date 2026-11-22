@@ -1,0 +1,94 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x18005A709",
+      "fn": "0x18005A520"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x18005B282",
+      "fn": "0x18005AF90"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180005373",
+      "fn": "0x1800052A0"
+    },
+    {
+      "hash": 2605530460,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18001B444",
+      "fn": "0x18001B400"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180005349",
+      "fn": "0x1800052A0"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000539D",
+      "fn": "0x1800052A0"
+    },
+    {
+      "hash": 3917576620,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x18000EB92",
+      "fn": "0x18000EAF0"
+    },
+    {
+      "hash": 3945205914,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000DD69",
+      "fn": "0x18000DCB0"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000531F",
+      "fn": "0x1800052A0"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "ws2_32.dll",
+    "tier0.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": [
+    "advapi32.dll"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "private": true,
+  "name": "s2-launch-options",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/compress-schemas.ts && react-router dev",
+    "build": "node scripts/compress-schemas.ts && react-router build && node scripts/flatten-prerender.ts",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@floating-ui/react": "^0.27.20",
+    "@react-router/node": "^8.0.1",
+    "@tanstack/react-virtual": "^3.14.9",
+    "inter-ui": "^4.1.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router": "^8.0.1"
+  },
+  "devDependencies": {
+    "@linaria/react": "^8.1.1",
+    "@react-router/dev": "^8.3.0",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@wyw-in-js/vite": "2.4.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.0"
+  }
+}

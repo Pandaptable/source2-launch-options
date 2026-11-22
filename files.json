@@ -1,0 +1,17 @@
+{
+    "2347771": [
+        "regex:^(?!.*(?:import_scripts|csdm)).+?\\.(dll|exe)$"
+    ],
+    "373303": [
+        "regex:^(?!.*(?:import_scripts|csdm)).+?\\.(dll|exe)$"
+    ],
+    "1422452": [
+        "regex:^(?!.*(?:import_scripts|csdm)).+?\\.(dll|exe)$"
+    ],
+    "250831": [
+        "regex:^(?!.*(?:import_scripts|csdm)).+?\\.(dll|exe)$"
+    ],
+    "546563": [
+        "regex:^(?!.*(?:import_scripts|csdm)).+?\\.(dll|exe)$"
+    ]
+}

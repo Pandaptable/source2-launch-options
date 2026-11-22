@@ -1,0 +1,31 @@
+name: Build dumper
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            binary: cs-hash-reversal
+            artifact: cs-hash-reversal-linux
+          - os: windows-latest
+            binary: cs-hash-reversal.exe
+            artifact: cs-hash-reversal-windows.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --manifest-path find-hashes/Cargo.toml --quiet
+      - name: Upload to release
+        run: |
+          TAG="dumper"
+          gh release create "$TAG" --title "Dumper binaries" --notes "Prebuilt cs-hash-reversal for CI" 2>/dev/null || true
+          gh release upload "$TAG" "find-hashes/target/release/${{ matrix.binary }}#${{ matrix.artifact }}" --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

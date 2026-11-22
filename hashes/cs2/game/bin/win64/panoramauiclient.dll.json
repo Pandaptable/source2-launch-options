@@ -1,0 +1,94 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1801B2EE2",
+      "fn": "0x1801B2BF0"
+    },
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x1801B4CC9",
+      "fn": "0x1801B4AE0"
+    },
+    {
+      "hash": 455342288,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800ED214",
+      "fn": "0x1800ED1D6"
+    },
+    {
+      "hash": 455342288,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800F3671",
+      "fn": "0x1800F3643"
+    },
+    {
+      "hash": 1116175964,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x1800F3199",
+      "fn": "0x1800F3160"
+    },
+    {
+      "hash": 1849011768,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180011D13",
+      "fn": "0x180011C40"
+    },
+    {
+      "hash": 2776830954,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180011CE9",
+      "fn": "0x180011C40"
+    },
+    {
+      "hash": 3020312170,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180011D3D",
+      "fn": "0x180011C40"
+    },
+    {
+      "hash": 4274893216,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180011CBF",
+      "fn": "0x180011C40"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "steam_api64.dll",
+    "tier0.dll",
+    "v8.dll",
+    "video64.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": []
+}

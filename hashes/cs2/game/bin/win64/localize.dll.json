@@ -1,0 +1,168 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180030789",
+      "fn": "0x1800305A0"
+    },
+    {
+      "hash": 390511131,
+      "slot": 48,
+      "method": "index",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18000F0AA",
+      "fn": "0x18000F086"
+    },
+    {
+      "hash": 455342288,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180002DCA",
+      "fn": "0x180002D20"
+    },
+    {
+      "hash": 1755977669,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180020A9F",
+      "fn": "0x180020A75"
+    },
+    {
+      "hash": 1755977669,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": false,
+      "va": "0x180024B6C",
+      "fn": "0x180024B20"
+    },
+    {
+      "hash": 1755977669,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x180020AC3",
+      "fn": "0x180020A75"
+    },
+    {
+      "hash": 1755977669,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x180024B90",
+      "fn": "0x180024B20"
+    },
+    {
+      "hash": 2038783773,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18001E6E7",
+      "fn": "0x18001E6B9"
+    },
+    {
+      "hash": 2115173857,
+      "slot": 136,
+      "method": "check",
+      "gate": "open",
+      "value": false,
+      "va": "0x180023D1B",
+      "fn": "0x180023CD0"
+    },
+    {
+      "hash": 2115173857,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180024C81",
+      "fn": "0x180024C40"
+    },
+    {
+      "hash": 2115173857,
+      "slot": 184,
+      "method": "cstr",
+      "gate": "open",
+      "value": true,
+      "va": "0x180023D42",
+      "fn": "0x180023CD0"
+    },
+    {
+      "hash": 2145831849,
+      "slot": 32,
+      "method": "flag",
+      "gate": "locked",
+      "value": false,
+      "va": "0x18002082E",
+      "fn": "0x1800207FB"
+    },
+    {
+      "hash": 3191848936,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x180024C62",
+      "fn": "0x180024C40"
+    },
+    {
+      "hash": 3217666393,
+      "slot": 80,
+      "method": "int",
+      "gate": "locked",
+      "value": true,
+      "va": "0x180020761",
+      "fn": "0x180020710"
+    },
+    {
+      "hash": 3217666393,
+      "slot": 80,
+      "method": "int",
+      "gate": "locked",
+      "value": true,
+      "va": "0x180023DC6",
+      "fn": "0x180023CD0"
+    },
+    {
+      "hash": 3451720338,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x18000334F",
+      "fn": "0x180002D20"
+    }
+  ],
+  "relations": [
+    {
+      "earlier": 2115173857,
+      "later": 2115173857,
+      "relation": "requires",
+      "branch_va": 6442597665
+    },
+    {
+      "earlier": 3191848936,
+      "later": 2115173857,
+      "relation": "alternative",
+      "branch_va": 6442601578
+    }
+  ],
+  "imports": [
+    "steam_api64.dll",
+    "tier0.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": []
+}

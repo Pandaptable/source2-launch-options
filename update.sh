@@ -1,82 +1,87 @@
 #!/usr/bin/env bash
-# update: fetch binaries via SteamFileDownloader, dump, resolve, optionally commit.
+# update: dump launch-option hashes from freshly tracked depots, rebuild site data, optionally commit.
 #
-# usage: ./update.sh [--no-fetch] [--commit]
+# usage: APPID=<steam app id> ./update.sh [--commit]
 #
-# Prerequisite: SteamFileDownloader on PATH, logged in once ("SteamFileDownloader login").
+# Binaries are fetched separately: SteamFileDownloader track <appid> --output depots
+# (reads files.json from the repo root; CI does this before calling this script).
 
 set -euo pipefail
 cd "$(dirname "$0")"
 
-FETCH=1
 COMMIT=0
 while [[ $# -gt 0 ]]; do
 	case "$1" in
-		--no-fetch) FETCH=0 ;;
-		--commit)   COMMIT=1 ;;
+		--commit) COMMIT=1 ;;
 	esac
 	shift
 done
 
-SFD="${SFD:-SteamFileDownloader}"
 OUT="depots"
 
-declare -A DEPOT_TO_GAME=([2347771]="cs2" [373303]="dota2" [1422452]="deadlock")
-declare -A APPS=([cs2]=730 [dota2]=570 [deadlock]=1422450)
+declare -A DEPOT_TO_GAME=([2347771]="cs2" [373303]="dota2" [1422452]="deadlock" [250831]="steamvr" [546563]="hla")
+declare -A APP_TO_GAME=([730]="cs2" [570]="dota2" [1422450]="deadlock" [250820]="steamvr" [546560]="hla")
 
-# [250831]="steamvr" [546563]="hla"
-# [steamvr]=250820 [hla]=546560
-# 250820/250831 546560/546563
-
-if (( FETCH )); then
-	"$SFD" get 730/2347771 570/373303 1422450/1422452  --output "$OUT" \
-		-- 'regex:game/bin/win64/[^/]+\.(dll|exe|so)$' 'regex:game/bin/win64/(tools|subtools)/[^/]+\.(dll|exe)$' \
-		2>&1 | grep -E "^Files:|::error::" || true
+# With APPID set, only that game's depot is dumped; otherwise every cached depot.
+declare -A GAME_TO_DEPOT
+for depot in "${!DEPOT_TO_GAME[@]}"; do GAME_TO_DEPOT["${DEPOT_TO_GAME[$depot]}"]=$depot; done
+if [[ -n "${APPID:-}" ]]; then
+	game="${APP_TO_GAME[$APPID]:-}"
+	if [[ -z "$game" ]]; then
+		echo "unknown appid $APPID" >&2
+		exit 1
+	fi
+	depots=("${GAME_TO_DEPOT[$game]}")
+else
+	depots=("${!DEPOT_TO_GAME[@]}")
 fi
 
-echo "--- dump"
+DUMPER="${DUMPER:-find-hashes/target/release/cs-hash-reversal.exe}"
+if [[ ! -f "$DUMPER" && -f "find-hashes/bin/cs-hash-reversal-linux" ]]; then
+	DUMPER="find-hashes/bin/cs-hash-reversal-linux"
+fi
+if [[ ! -f "$DUMPER" ]]; then
+	echo "--- building dumper (no prebuilt found)"
+	cargo build --release --manifest-path find-hashes/Cargo.toml --quiet
+	DUMPER="find-hashes/target/release/cs-hash-reversal.exe"
+fi
+
 total=0
-for depot_dir in "$OUT"/*/; do
-	depot=$(basename "$depot_dir")
-	game="${DEPOT_TO_GAME[$depot]:-}"
-	[[ -n "$game" ]] || continue
-	n=$(find-hashes/target/release/cs-hash-reversal.exe "$depot_dir" --base game --out "hashes/$game" 2>/dev/null | grep -cE "^\[\+\]" || true)
+echo "--- dump"
+for depot in "${depots[@]}"; do
+	game="${DEPOT_TO_GAME[$depot]}"
+	[[ -d "$OUT/$depot" ]] || continue
+	# Only the newest cached manifest: older ones would overwrite the fresh dump.
+	latest=$(ls -t "$OUT/$depot" | head -1)
+	[[ -n "$latest" ]] || continue
+	depot_dir="$OUT/$depot/$latest"
+	n=$("$DUMPER" "$depot_dir" --base game --out "hashes/$game" --names launch-options.txt 2>/dev/null | grep -cE "^\[\+\]" || true)
 	total=$((total + n))
 done
 echo "dumped $total modules"
 
-echo "--- resolve"
-python mc.py -d hashes -f launch-options.txt | tail -1
-
-echo "--- unknown"
-grep -hroE "^[0-9]+" hashes/cs2 hashes/dota2 hashes/deadlock hashes/steamvr 2>/dev/null | sort -u > unmapped.txt
-echo "$(wc -l < unmapped.txt) unmapped (unmapped.txt)"
+echo "--- site data"
+python site/scripts/build-data.py 2>/dev/null | tail -1 || echo "site scripts not found, skipping"
 
 if (( COMMIT )); then
 	echo "--- commit"
-	git add hashes/ unmapped.txt
+	git add hashes/ unmapped.txt site/schemas/ 2>/dev/null || git add hashes/ unmapped.txt
 	git diff --cached --quiet && echo "nothing to commit" && exit 0
 
-	msg=""
-	for game in cs2 dota2 deadlock steamvr; do
-		files=$(git diff --cached --name-only -- "hashes/$game/" 2>/dev/null | wc -l)
-		(( files > 0 )) || continue
-		build=$("$SFD" depots "${APPS[$game]}" 2>&1 | grep -o 'build [0-9]*' | head -1 | grep -o '[0-9]*' || echo "?")
-		sample=$(git diff --cached --name-only -- "hashes/$game/" 2>/dev/null | sed "s|^hashes/$game/||" | head -3 | paste -sd,)
-		if [[ "$build" != "?" && "$build" != "0" ]]; then
-			msg+="$game ($build | $files files | $sample...)
-https://steamdb.info/patchnotes/$build/
-"
-		else
-			msg+="$game (unknown build | $files files | $sample...)
-"
+	# <game> | <n> files | <status list, cut to 1024 chars> + SteamDB patchnotes link
+	game="${APP_TO_GAME[${APPID:-}]:-unknown}"
+	changed=$(git diff --cached --name-status)
+	n=$(echo "$changed" | wc -l)
+	msg="$game | $n files | $(echo "$changed" | awk '{printf "%s%s %s", sep, $1, $2; sep=", "}' | cut -c 1-1024)"
+
+	if [[ -f "$OUT/steam_buildid.txt" ]]; then
+		buildid=$(grep -o '[0-9]*' "$OUT/steam_buildid.txt" || true)
+		if [[ -n "$buildid" ]]; then
+			msg+=$'\n\nhttps://steamdb.info/patchnotes/'"$buildid/"
 		fi
-	done
-	if [[ -n "${COMMIT_NAME:-}" && -n "${COMMIT_EMAIL:-}" ]]; then
-		git -c user.name="$COMMIT_NAME" -c user.email="$COMMIT_EMAIL" commit -m "$msg"
-	else
-		git commit -m "$msg"
 	fi
-	[[ -n "${PUSH_REMOTE:-}" ]] && git push "$PUSH_REMOTE" HEAD:main
+
+	git commit --message "$msg" || true
+	git push
 	git log -1 --stat | head -8
 fi

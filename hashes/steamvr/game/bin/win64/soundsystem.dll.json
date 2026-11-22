@@ -1,0 +1,41 @@
+{
+  "sites": [
+    {
+      "hash": 3103274322,
+      "slot": 64,
+      "method": "string",
+      "gate": "locked",
+      "value": true,
+      "va": "0x18001D266",
+      "fn": "0x18001D1B0"
+    },
+    {
+      "hash": 3103274322,
+      "slot": 64,
+      "method": "string",
+      "gate": "locked",
+      "value": true,
+      "va": "0x18003D7E5",
+      "fn": "0x18003D7AB"
+    },
+    {
+      "hash": 3103274322,
+      "slot": 72,
+      "method": "float",
+      "gate": "locked",
+      "value": true,
+      "va": "0x18003D887",
+      "fn": "0x18003D840"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "kernel32.dll",
+    "winmm.dll",
+    "tier0.dll",
+    "vstdlib.dll"
+  ],
+  "dynamic": [
+    "dsound.dll"
+  ]
+}

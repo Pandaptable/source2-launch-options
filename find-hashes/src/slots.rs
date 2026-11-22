@@ -60,8 +60,6 @@ pub fn token_method(slot: u64) -> Option<TokenMethod> {
 		(0x50, TokenMethod::ParmValueInt),
 		(0x58, TokenMethod::ParmValueCStr),
 	];
-	// The post-lock variants are laid out uniformly (stride 8 from 0x88),
-	// unlike the primary set which has gaps; match positionally.
 	const POST_LOCK: [(u64, TokenMethod); 7] = [
 		(0x88, TokenMethod::CheckParm),
 		(0x90, TokenMethod::HasParm),
@@ -77,6 +75,19 @@ pub fn token_method(slot: u64) -> Option<TokenMethod> {
 		.flatten()
 		.find(|(s, _)| *s == slot)
 		.map(|(_, method)| method)
+}
+
+/// Whether a token slot belongs to the lock-gated primary set.
+///
+/// Reversed from tier0: `CreateCmdLine` sets the object's lock byte unless
+/// the command line holds `-tools`, `-dedicated` or `-insecure` (or the
+/// GPU-launcher environment overrides fire, or the host is Source2Launcher).
+/// While locked, every primary token method returns "not present"; the
+/// post-lock slots at 0x88+ answer regardless.
+// Reversed from tier0: CreateCmdLine sets the lock byte unless
+// -tools, -dedicated or -insecure is present (or GPU env overrides / Source2Launcher host).
+pub fn is_locked_slot(slot: u64) -> bool {
+	slot < 0x88 && token_method(slot).is_some()
 }
 
 #[cfg(test)]

@@ -1,0 +1,22 @@
+{
+  "sites": [
+    {
+      "hash": 197456290,
+      "slot": 144,
+      "method": "flag",
+      "gate": "open",
+      "value": false,
+      "va": "0x18000DA69",
+      "fn": "0x18000D880"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "user32.dll",
+    "advapi32.dll",
+    "imm32.dll",
+    "tier0.dll",
+    "kernel32.dll"
+  ],
+  "dynamic": []
+}

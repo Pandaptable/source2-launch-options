@@ -1,0 +1,38 @@
+{
+  "sites": [
+    {
+      "hash": 7563894,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x1800815B4",
+      "fn": "0x180081525"
+    },
+    {
+      "hash": 2084470880,
+      "slot": 24,
+      "method": "check",
+      "gate": "locked",
+      "value": null,
+      "va": "0x180071112",
+      "fn": "0x18007104B"
+    }
+  ],
+  "relations": [],
+  "imports": [
+    "user32.dll",
+    "winmm.dll",
+    "sdl2.dll",
+    "steam_api64.dll",
+    "tier0.dll",
+    "v8.dll",
+    "v8_libplatform.dll",
+    "video64.dll",
+    "vstdlib.dll",
+    "kernel32.dll",
+    "advapi32.dll",
+    "ws2_32.dll"
+  ],
+  "dynamic": []
+}
