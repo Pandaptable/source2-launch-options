@@ -1,0 +1,59 @@
+import { readdir, rename, rm, readFile, writeFile, stat } from "node:fs/promises";
+import { join } from "node:path";
+
+/**
+ * 1. Flatten index.html files to {dir}.html
+ * 2. Move source2-launch-options/* into build/client/ (to avoid double nesting on GH Pages)
+ */
+async function flatten(dir: string) {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+
+    const folderPath = join(dir, entry.name);
+
+    await flatten(folderPath);
+
+    try {
+      await rename(join(folderPath, "index.html"), join(dir, `${entry.name}.html`));
+    } catch (e: any) {
+      if (e.code !== "ENOENT") throw e;
+    }
+
+    // Remove directory if now empty
+    if ((await readdir(folderPath)).length === 0) {
+      await rm(folderPath, { recursive: true });
+    }
+  }
+}
+
+const clientDir = join(process.cwd(), "build", "client");
+const baseDir = join(clientDir, "source2-launch-options");
+
+try {
+  await stat(baseDir);
+} catch (e: any) {
+  if (e.code === "ENOENT") process.exit(0);
+  throw e;
+}
+
+// Rename SPA fallback to 404.html for GitHub Pages and add noindex
+const spaFallback = join(clientDir, "index.html");
+const html = (await readFile(spaFallback, "utf-8")).replace(
+  "<head>",
+  '<head>\n<meta name="robots" content="noindex">',
+);
+await writeFile(join(clientDir, "404.html"), html);
+await rm(spaFallback);
+
+// Flatten index.html → .html inside source2-launch-options/
+await flatten(baseDir);
+
+// Move source2-launch-options/* into build/client/
+for (const entry of await readdir(baseDir, { withFileTypes: true })) {
+  const dest = join(clientDir, entry.name);
+  await rm(dest, { recursive: true, force: true });
+  await rename(join(baseDir, entry.name), dest);
+}
+await rm(baseDir, { recursive: true });
+
+console.log("Flattened prerendered routes and moved to build/client/.");
