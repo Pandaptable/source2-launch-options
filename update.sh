@@ -19,8 +19,8 @@ done
 
 OUT="depots"
 
-declare -A DEPOT_TO_GAME=([2347771]="cs2" [373303]="dota2" [1422452]="deadlock" [250831]="steamvr" [546563]="hla")
-declare -A APP_TO_GAME=([730]="cs2" [570]="dota2" [1422450]="deadlock" [250820]="steamvr" [546560]="hla")
+declare -A DEPOT_TO_GAME=([2347771]="cs2" [373303]="dota2" [1422452]="deadlock")
+declare -A APP_TO_GAME=([730]="cs2" [570]="dota2" [1422450]="deadlock")
 
 # With APPID set, only that game's depot is dumped; otherwise every cached depot.
 declare -A GAME_TO_DEPOT
