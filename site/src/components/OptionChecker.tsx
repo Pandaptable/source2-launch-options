@@ -4,9 +4,11 @@ import { GAME_LIST, type GameId } from "../games-list";
 import { getGameContext, type GameContext } from "../data/options";
 import { itemTypes } from "../utils/console-filtering";
 import { murmur2 } from "../utils/murmur";
+import { GameIcon, KindIcon } from "./kind-icon/KindIcon";
+import { isGameId } from "../games-list";
+import { registerTooltip, tip } from "./Tooltip";
 import { Card, CardBody, CardHeader, CardTitle } from "./styles";
-import { KindIcon } from "./kind-icon/KindIcon";
-import { tip } from "./Tooltip";
+
 
 const CheckerInput = styled.input`
   width: 100%;
@@ -73,6 +75,34 @@ const Summary = styled.p`
   font-size: 13px;
   color: var(--text-dim);
 `;
+
+const TipGames = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const TipLine = styled.span`
+  display: block;
+`;
+
+registerTooltip("checker-arg", (el) => {
+  const ids = (el.dataset.games ?? "").split(",").filter(isGameId);
+  const hash = el.dataset.hash ?? "";
+  const modules = (el.dataset.modules ?? "").split(",").filter(Boolean);
+  return (
+    <>
+      <TipGames>
+        {ids.map((id) => (
+          <GameIcon key={id} game={id} />
+        ))}
+      </TipGames>
+      <TipLine>hash {hash}</TipLine>
+      {modules.length > 0 && <TipLine>checked by {modules.join(", ")}</TipLine>}
+    </>
+  );
+});
+
 
 const Note = styled.p`
   margin: 0 0 10px;
@@ -143,10 +173,10 @@ export function OptionChecker() {
         parts.push(
           <Arg
             key={token + parts.length}
-            {...tip(
-              `${token} · hash ${murmur2(token)} · checked by ${option.modules.slice(0, 5).join(", ")}` +
-              (option.modules.length > 5 ? ` +${option.modules.length - 5} more` : ""),
-            )}
+            data-tip-kind="checker-arg"
+            data-games={found.map((f) => f.games[0]).join(",")}
+            data-hash={String(murmur2(token))}
+            data-modules={option.modules.slice(0, 5).join(",") + (option.modules.length > 5 ? ` +${option.modules.length - 5} more` : "")}
           >
             {token}
           </Arg>,
