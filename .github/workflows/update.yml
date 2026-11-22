@@ -65,8 +65,13 @@ jobs:
         run: |
           APPID="${{ github.event.client_payload.appid || inputs.appid }}"
           BRANCH="${{ github.event.client_payload.branch || inputs.branch || 'public' }}"
-          SteamFileDownloader track --username "$STEAM_USERNAME" --password "$STEAM_PASSWORD" \
-            --appid "$APPID" --output depots --branch "$BRANCH"
+          ARGS=()
+          if [[ -n "$STEAM_USERNAME" && -n "$STEAM_PASSWORD" ]]; then
+            ARGS+=(--username "$STEAM_USERNAME" --password "$STEAM_PASSWORD")
+          else
+            ARGS+=(--anonymous)
+          fi
+          SteamFileDownloader track "${ARGS[@]}" --appid "$APPID" --output depots --branch "$BRANCH"
 
       - name: Run update script
         env:
