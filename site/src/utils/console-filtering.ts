@@ -124,10 +124,13 @@ export const FLAGS: Record<string, { label: string; tip: string }> = {
   },
   shared: { label: "Also in other games", tip: "Other games' binaries check this token too" },
   needs: {
-    label: "Depends on other options",
-    tip: "This option's check only runs when other launch options are present too",
+    label: "Some checks need others",
+    tip: "At least one check of this option only counts when another launch option is present too",
   },
-  alias: { label: "Has aliases", tip: "The same check accepts other tokens in place of this one" },
+  alias: {
+    label: "Some checks accept others",
+    tip: "At least one check of this option also counts when another launch option stands in for it",
+  },
 };
 
 /** The flags an option has */
@@ -135,8 +138,8 @@ export function itemFlags(item: ConsoleItem): string[] {
   const flags: string[] = [];
   if (item.locked) flags.push("locked");
   if (item.elsewhere?.length) flags.push("shared");
-  if (item.requires?.length) flags.push("needs");
-  if (item.alternatives?.length) flags.push("alias");
+  if (item.needs?.length) flags.push("needs");
+  if (item.or?.length) flags.push("alias");
   return flags;
 }
 
@@ -262,11 +265,11 @@ export function withoutFlag(parsed: ParsedConsoleSearch, flag: string): ParsedCo
 export function hasTagFilters(parsed: ParsedConsoleSearch): boolean {
   return (
     parsed.modules.length +
-      parsed.notModules.length +
-      parsed.types.length +
-      parsed.notTypes.length +
-      parsed.flags.length +
-      parsed.notFlags.length >
+    parsed.notModules.length +
+    parsed.types.length +
+    parsed.notTypes.length +
+    parsed.flags.length +
+    parsed.notFlags.length >
     0
   );
 }

@@ -36,7 +36,8 @@ export function parseOptions(data: OptionsJson): ParsedOptions {
     value: o.value,
     valueTypes: o.valueTypes,
     locked: o.locked,
-    requires: o.requires,
+    needs: o.needs,
+    or: o.or,
     alternatives: o.alternatives,
     sites: o.sites,
   }));

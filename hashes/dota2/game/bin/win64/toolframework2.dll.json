@@ -199,7 +199,29 @@
       "fn": "0x1800026D0"
     }
   ],
-  "relations": [],
+  "relations": [
+    {
+      "earlier": 1873549870,
+      "later": 721986684,
+      "relation": "requires",
+      "branch_va": 6442739167,
+      "later_va": 6442739276
+    },
+    {
+      "earlier": 1873549870,
+      "later": 1236174432,
+      "relation": "requires",
+      "branch_va": 6442739167,
+      "later_va": 6442739246
+    },
+    {
+      "earlier": 1873549870,
+      "later": 2383142401,
+      "relation": "requires",
+      "branch_va": 6442739167,
+      "later_va": 6442739200
+    }
+  ],
   "imports": [
     "advapi32.dll",
     "libfbxsdk_2020_3_1.dll",

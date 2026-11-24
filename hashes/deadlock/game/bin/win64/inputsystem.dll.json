@@ -118,7 +118,15 @@
       "fn": "0x180003280"
     }
   ],
-  "relations": [],
+  "relations": [
+    {
+      "earlier": 1345706809,
+      "later": 754777372,
+      "relation": "negates",
+      "branch_va": 6442464369,
+      "later_va": 6442464407
+    }
+  ],
   "imports": [
     "user32.dll",
     "advapi32.dll",

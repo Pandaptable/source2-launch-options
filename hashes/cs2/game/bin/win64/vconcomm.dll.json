@@ -100,7 +100,15 @@
       "fn": "0x180005800"
     }
   ],
-  "relations": [],
+  "relations": [
+    {
+      "earlier": 2372379517,
+      "later": 1170955440,
+      "relation": "negates",
+      "branch_va": 6442474813,
+      "later_va": 6442474842
+    }
+  ],
   "imports": [
     "user32.dll",
     "ws2_32.dll",

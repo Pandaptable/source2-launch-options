@@ -371,34 +371,15 @@ export const ConsoleRow = memo(function ConsoleRow({
           )}
         </Chips>
       </Line>
-      {(item.requires || item.alternatives) && (
+      {item.alternatives && item.alternatives.length > 0 && (
         <Relations>
-          {item.requires && item.requires.length > 0 && (
-            <RelGroup {...tip("This option's check only runs when these are also present")}>
-              needs:{" "}
-              {item.requires.map((r, i) => (
-                <Fragment key={r}>
-                  {i > 0 && ", "}
-                  <RelLink href={`${pageHref}#name=${encodeURIComponent(r)}`} onClick={(e) => onNavigate(r, e)}>
-                    {r}
-                  </RelLink>
-                </Fragment>
-              ))}
-            </RelGroup>
-          )}
-          {item.alternatives && item.alternatives.length > 0 && (
-            <RelGroup {...tip("The same check accepts any of these tokens. Only shown when the pair is checked together at every call site of both options")}>
-              aliases:{" "}
-              {item.alternatives.map((a, i) => (
-                <Fragment key={a}>
-                  {i > 0 && ", "}
-                  <RelLink href={`${pageHref}#name=${encodeURIComponent(a)}`} onClick={(e) => onNavigate(a, e)}>
-                    {a}
-                  </RelLink>
-                </Fragment>
-              ))}
-            </RelGroup>
-          )}
+          <RelGroup
+            {...tip(
+              "Every check of this option also counts when one of these tokens is present instead. Only shown when that holds at every check of both options",
+            )}
+          >
+            aliases: <RelNames names={item.alternatives} pageHref={pageHref} onNavigate={onNavigate} />
+          </RelGroup>
         </Relations>
       )}
       {unmapped && <Help data-missing>unmapped, referenced with no known token</Help>}
@@ -426,6 +407,16 @@ export const ConsoleRow = memo(function ConsoleRow({
                 {s.gate === "locked" && (
                   <FlagChip {...tip("Only answers with -tools, -dedicated or -insecure")}>locked</FlagChip>
                 )}
+                {s.needs && (
+                  <RelGroup {...tip("This check only counts when that option is present too")}>
+                    needs <RelNames names={s.needs} pageHref={pageHref} onNavigate={onNavigate} />
+                  </RelGroup>
+                )}
+                {s.or && (
+                  <RelGroup {...tip("This check also counts when that option is present instead")}>
+                    or <RelNames names={s.or} pageHref={pageHref} onNavigate={onNavigate} />
+                  </RelGroup>
+                )}
               </SiteLine>
               {s.more && (
                 <SiteLine data-more>
@@ -443,6 +434,26 @@ export const ConsoleRow = memo(function ConsoleRow({
     </Row >
   );
 });
+
+/** Other options by name, as links to their rows */
+function RelNames({
+  names,
+  pageHref,
+  onNavigate,
+}: {
+  names: string[];
+  pageHref: string;
+  onNavigate: (name: string, e: MouseEvent) => void;
+}) {
+  return names.map((n, i) => (
+    <Fragment key={n}>
+      {i > 0 && ", "}
+      <RelLink href={`${pageHref}#name=${encodeURIComponent(n)}`} onClick={(e) => onNavigate(n, e)}>
+        {n}
+      </RelLink>
+    </Fragment>
+  ));
+}
 
 const Relations = styled.div`
   margin: 2px 0 0 24px;

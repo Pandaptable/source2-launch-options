@@ -82,7 +82,15 @@
       "fn": "0x180001AE0"
     }
   ],
-  "relations": [],
+  "relations": [
+    {
+      "earlier": 552294149,
+      "later": 1677567567,
+      "relation": "negates",
+      "branch_va": 6442910827,
+      "later_va": 6442910853
+    }
+  ],
   "imports": [
     "tier0.dll",
     "kernel32.dll"

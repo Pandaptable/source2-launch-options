@@ -28,14 +28,7 @@
       "fn": "0x1800017E0"
     }
   ],
-  "relations": [
-    {
-      "earlier": 2133286778,
-      "later": 3299646795,
-      "relation": "negates",
-      "branch_va": 6442457174
-    }
-  ],
+  "relations": [],
   "imports": [
     "tier0.dll",
     "kernel32.dll"

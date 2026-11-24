@@ -247,7 +247,15 @@
       "fn": "0x180083160"
     }
   ],
-  "relations": [],
+  "relations": [
+    {
+      "earlier": 341089031,
+      "later": 2931451025,
+      "relation": "negates",
+      "branch_va": 6442460446,
+      "later_va": 6442460469
+    }
+  ],
   "imports": [
     "gdi32.dll",
     "tier0.dll",

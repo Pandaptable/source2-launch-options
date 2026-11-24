@@ -2,7 +2,7 @@
 use crate::murmur::token_hash;
 use crate::slots::{TokenMethod, token_method};
 use serde::Serialize;
-use iced_x86::{Decoder, DecoderOptions, Instruction, Mnemonic, OpKind, Register};
+use iced_x86::{Decoder, DecoderOptions, FlowControl, Instruction, Mnemonic, OpKind, Register};
 use std::collections::{HashMap, HashSet};
 
 /// A discovered launch-option token site.
@@ -27,13 +27,12 @@ pub struct Site {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Relation {
-	/// The later site is only reached when the earlier one succeeded (&&).
+	/// The later check only runs when the earlier one found its option (a && b).
 	Requires,
-	/// The later site is only reached when the earlier one failed (||).
+	/// The later check is tried when the earlier one found nothing, and success on
+	/// either leads to the same place (a || b).
 	Alternative,
-	/// `a && !b`: both jumps leave to the same target with opposite
-	/// flavors, so the later option negates the earlier one (the -no
-	/// family, like -nop4 under -p4).
+	/// The later check only runs when the earlier option is absent.
 	Negates,
 }
 
@@ -47,6 +46,8 @@ pub struct SiteRelation {
 	pub relation: Relation,
 	/// VA of the conditional jump that established the relation.
 	pub branch_va: u64,
+	/// VA of the later check, which the relation describes.
+	pub later_va: u64,
 }
 
 /// Section mapping used to translate VAs to file offsets.
@@ -770,40 +771,119 @@ fn jump_flavor(ins: &Instruction) -> Option<bool> {
 	}
 }
 
-/// The first conditional jump that consumes a call's RAX result: a
-/// `test rax, rax` / `cmp rax, 0` followed by a branch, with nothing else
-/// clobbering RAX in between.
+/// The conditional jump that branches on a call's RAX result: a `test rax, rax` /
+/// `cmp rax, 0` followed by the branch. A result stored away, or another compare in
+/// between, means the next branch is not the check's own
 fn consuming_jcc(insns: &[Instruction], idx: usize) -> Option<&Instruction> {
-	for ins in insns.iter().skip(idx + 1).take(6) {
+	let mut tested = false;
+	for ins in insns.iter().skip(idx + 1).take(4) {
 		match ins.mnemonic() {
+			Mnemonic::Nop => {}
 			Mnemonic::Test
 				if ins.op0_kind() == OpKind::Register
 					&& base(ins.op0_register()) == Register::RAX
 					&& ins.op1_kind() == OpKind::Register
-					&& base(ins.op1_register()) == Register::RAX => {}
+					&& base(ins.op1_register()) == Register::RAX =>
+			{
+				tested = true;
+			}
 			Mnemonic::Cmp
 				if ins.op0_kind() == OpKind::Register
 					&& base(ins.op0_register()) == Register::RAX
 					&& is_imm_op(ins.op1_kind())
-					&& ins.immediate64() == 0 => {}
+					&& ins.immediate64() == 0 =>
+			{
+				tested = true;
+			}
 			Mnemonic::Je | Mnemonic::Jne | Mnemonic::Ja | Mnemonic::Jg | Mnemonic::Jbe | Mnemonic::Jl => {
-				return Some(ins);
+				return tested.then_some(ins);
 			}
-			_ => {
-				if ins.op0_kind() == OpKind::Register
-					&& base(ins.op0_register()) == Register::RAX
-					&& writes_op0(ins)
-				{
-					return None;
-				}
-			}
+			_ => return None,
 		}
 	}
 	None
 }
 
-/// Detects how token checks in the same function combine: `a && b`
-/// (Requires), `a || b` (Alternative) or `a && !b` (Negates).
+/// The basic blocks of a decoded function and which block follows which.
+struct Flow {
+	block_of: Vec<usize>,
+	succ: Vec<Vec<usize>>,
+}
+
+/// Splits a decoded function at branch targets and after jumps. A jump through a register has no
+/// known target, so its block leads nowhere here
+fn flow_of(insns: &[Instruction], index_of: &HashMap<u64, usize>) -> Flow {
+	let n = insns.len();
+	let mut leader = vec![false; n];
+	if n > 0 {
+		leader[0] = true;
+	}
+	for (i, ins) in insns.iter().enumerate() {
+		let ends = match ins.flow_control() {
+			FlowControl::UnconditionalBranch | FlowControl::ConditionalBranch => {
+				if let Some(&t) = index_of.get(&ins.near_branch_target()) {
+					leader[t] = true;
+				}
+				true
+			}
+			FlowControl::IndirectBranch | FlowControl::Return => true,
+			_ => false,
+		};
+		if ends && i + 1 < n {
+			leader[i + 1] = true;
+		}
+	}
+
+	let mut block_of = vec![0; n];
+	let mut last_of: Vec<usize> = Vec::new();
+	for i in 0..n {
+		if leader[i] {
+			last_of.push(i);
+		}
+		block_of[i] = last_of.len() - 1;
+		last_of[block_of[i]] = i;
+	}
+
+	let mut succ = vec![Vec::new(); last_of.len()];
+	for (b, &e) in last_of.iter().enumerate() {
+		let ins = &insns[e];
+		let fall = (e + 1 < n).then(|| block_of[e + 1]);
+		let target = || index_of.get(&ins.near_branch_target()).map(|&t| block_of[t]);
+		match ins.flow_control() {
+			FlowControl::UnconditionalBranch => succ[b].extend(target()),
+			FlowControl::ConditionalBranch => {
+				succ[b].extend(target());
+				succ[b].extend(fall);
+			}
+			FlowControl::IndirectBranch | FlowControl::Return => {}
+			_ => succ[b].extend(fall),
+		}
+	}
+	Flow { block_of, succ }
+}
+
+/// The blocks reachable from the function's first one, with one edge left out
+fn reached(flow: &Flow, without: Option<(usize, usize)>) -> Vec<bool> {
+	let mut seen = vec![false; flow.succ.len()];
+	let mut work = Vec::new();
+	if let Some(first) = seen.first_mut() {
+		*first = true;
+		work.push(0);
+	}
+	while let Some(b) = work.pop() {
+		for &s in &flow.succ[b] {
+			if Some((b, s)) != without && !seen[s] {
+				seen[s] = true;
+				work.push(s);
+			}
+		}
+	}
+	seen
+}
+
+/// Finds which token checks only run because of an earlier check's outcome. This
+/// is read off the control flow: one edge of the earlier check's branch is
+/// removed and the later check is looked for from the function's start
 pub fn relations_pass(
 	view: &ModuleView,
 	text: &[u8],
@@ -843,33 +923,73 @@ pub fn relations_pass(
 			decoder.decode_out(&mut ins);
 			insns.push(ins);
 		}
-		let find = |va: u64| insns.iter().position(|i| i.ip() == va);
+		let index_of: HashMap<u64, usize> = insns.iter().enumerate().map(|(i, ins)| (ins.ip(), i)).collect();
+		// A jump through a register can land anywhere, so where a check can be reached from
+		// is not known in a function that has one
+		if insns.iter().any(|ins| ins.flow_control() == FlowControl::IndirectBranch) {
+			continue;
+		}
+		let flow = flow_of(&insns, &index_of);
+		let all = reached(&flow, None);
 
-		for w in 0..fn_sites.len().saturating_sub(1) {
-			let earlier = fn_sites[w];
-			let later = &fn_sites[w + 1];
-			let Some(idx) = find(earlier.va) else { continue };
-			let Some(jcc) = consuming_jcc(&insns, idx) else { continue };
-			let Some(flavor) = jump_flavor(jcc) else { continue };
-			let target = jcc.near_branch_target();
-			if target <= later.va || target >= end {
+		// A later check can depend on any earlier one, so each earlier check is tried against all
+		for (wi, earlier) in fn_sites.iter().enumerate() {
+			let Some(&ei) = index_of.get(&earlier.va) else {
+				continue;
+			};
+			let Some(jcc) = consuming_jcc(&insns, ei) else {
+				continue;
+			};
+			let Some(flavor) = jump_flavor(jcc) else {
+				continue;
+			};
+			let Some(&ji) = index_of.get(&jcc.ip()) else {
+				continue;
+			};
+			if !all[flow.block_of[ei]] || ji + 1 >= insns.len() {
 				continue;
 			}
-			let later_flavor = find(later.va)
-				.and_then(|li| consuming_jcc(&insns, li))
-				.and_then(|lj| (lj.near_branch_target() == target).then_some(jump_flavor(lj))?);
-			let Some(later_flavor) = later_flavor else { continue };
-			let relation = match (flavor, later_flavor) {
-				(true, true) => Relation::Requires,
-				(false, false) => Relation::Alternative,
-				(_, _) => Relation::Negates,
-			};
-			relations.push(SiteRelation {
-				earlier: earlier.hash,
-				later: later.hash,
-				relation,
-				branch_va: jcc.ip(),
-			});
+			let from = flow.block_of[ji];
+			let fall = flow.block_of[ji + 1];
+			let taken = index_of.get(&jcc.near_branch_target()).map(|&t| flow.block_of[t]);
+
+			// What is still reachable when the branch is forced one way
+			let jump = reached(&flow, Some((from, fall)));
+			let no_jump = taken.map(|t| reached(&flow, Some((from, t))));
+
+			for later in &fn_sites[wi + 1..] {
+				let Some(&li) = index_of.get(&later.va) else {
+					continue;
+				};
+				let block = flow.block_of[li];
+				if !all[block] || later.hash == earlier.hash {
+					continue;
+				}
+				// Reached only through one edge, the later check runs only for that outcome
+				// of the earlier check. Reached through neither or both, the earlier check
+				// makes no difference to it
+				let via_fall = !jump[block];
+				let via_taken = no_jump.as_ref().is_some_and(|r| !r[block]);
+				if via_fall == via_taken {
+					continue;
+				}
+				let relation = if via_fall == flavor {
+					Relation::Requires
+				} else if via_fall && consuming_jcc(&insns, li).is_some_and(|lj| {
+					lj.near_branch_target() == jcc.near_branch_target() && jump_flavor(lj) == Some(false)
+				}) {
+					Relation::Alternative
+				} else {
+					Relation::Negates
+				};
+				relations.push(SiteRelation {
+					earlier: earlier.hash,
+					later: later.hash,
+					relation,
+					branch_va: jcc.ip(),
+					later_va: later.va,
+				});
+			}
 		}
 	}
 

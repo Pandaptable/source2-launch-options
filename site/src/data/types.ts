@@ -13,9 +13,11 @@ export interface ConsoleItem {
   valueTypes?: string[];
   /** Every check site is lock-gated: it only answers when the process launched with -tools, -dedicated or -insecure */
   locked?: boolean;
-  /** Options whose presence this option's check depends on (&& of two checks) */
-  requires?: string[];
-  /** Options that stand in for this one in an || of two checks */
+  /** Other options that a check of this option only counts together with */
+  needs?: string[];
+  /** Other options that a check of this option also accepts in place of it */
+  or?: string[];
+  /** Options that stand in for this one at every check of both */
   alternatives?: string[];
   /** Other games whose binaries also check this token */
   elsewhere?: string[];
@@ -39,6 +41,11 @@ export interface SiteInfo {
   value?: boolean | null;
   /** One copy of an inlined helper stamped across functions */
   inlined?: boolean;
+
+  /** Options this check only counts together with (a && b at this call site) */
+  needs?: string[];
+  /** Options this check also accepts in place of its own (a || b at this call site) */
+  or?: string[];
   /** Present on the last shown site when the module's list was capped: full count, function count, whether all are inlined copies */
   more?: { count: number; fns: number; inlined?: boolean };
 }
@@ -69,7 +76,8 @@ export interface OptionsJson {
     value?: boolean;
     valueTypes?: string[];
     locked?: boolean;
-    requires?: string[];
+    needs?: string[];
+    or?: string[];
     alternatives?: string[];
     sites?: {
       m: string;
@@ -79,6 +87,8 @@ export interface OptionsJson {
       gate: string;
       value?: boolean | null;
       inlined?: boolean;
+      needs?: string[];
+      or?: string[];
       more?: { count: number; fns: number; inlined?: boolean };
     }[];
   }[];

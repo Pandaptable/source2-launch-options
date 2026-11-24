@@ -145,20 +145,7 @@
       "fn": "0x180002D20"
     }
   ],
-  "relations": [
-    {
-      "earlier": 2115173857,
-      "later": 2115173857,
-      "relation": "requires",
-      "branch_va": 6442597665
-    },
-    {
-      "earlier": 3191848936,
-      "later": 2115173857,
-      "relation": "alternative",
-      "branch_va": 6442601578
-    }
-  ],
+  "relations": [],
   "imports": [
     "steam_api64.dll",
     "tier0.dll",

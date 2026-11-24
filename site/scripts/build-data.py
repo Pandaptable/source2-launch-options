@@ -99,26 +99,38 @@ def build_game(gid: str) -> dict:
 
 	for h, e in by_hash.items():
 		e["sites"] = []
-		e["requires"] = set()
+		e["needs"] = set()
+		e["or"] = set()
 		e["alternatives"] = set()
 	SITES_SHOWN = 10
+	GATE_TOKENS = {"-tools", "-dedicated", "-insecure"}
+	site_total: dict[int, int] = {}
+	alias_pair_count: dict[tuple[str, str], int] = {}
+	alias_pairs = []
+
+	def va_of(site: dict) -> int:
+		return int(site["va"], 16)
+
+	def hash_of(name: str) -> int | None:
+		return next((h for h, e in by_hash.items() if e["name"] == name), None)
+
 	for mod_name, mod in modules.items():
 		by_mod: dict[int, list[dict]] = {}
+		shown: dict[int, dict] = {}
 		for site in mod["sites"]:
-			e = by_hash.get(site["hash"])
-			if e is None:
+			site_total[site["hash"]] = site_total.get(site["hash"], 0) + 1
+			if site["hash"] not in by_hash:
 				continue
-			by_mod.setdefault(site["hash"], []).append(
-				{
-					"m": mod_name,
-					"va": site["va"],
-					"fn": site.get("fn"),
-					"method": site["method"],
-					"gate": site["gate"],
-					"value": site.get("value"),
-					"inlined": site.get("inlined", False),
-				}
-			)
+			shown[id(site)] = {
+				"m": mod_name,
+				"va": site["va"],
+				"fn": site.get("fn"),
+				"method": site["method"],
+				"gate": site["gate"],
+				"value": site.get("value"),
+				"inlined": site.get("inlined", False),
+			}
+			by_mod.setdefault(site["hash"], []).append(shown[id(site)])
 		for h, lst in by_mod.items():
 			e = by_hash[h]
 			if len(lst) > SITES_SHOWN:
@@ -132,10 +144,10 @@ def build_game(gid: str) -> dict:
 				}
 				lst = lst[:SITES_SHOWN]
 			e["sites"].extend(lst)
-	GATE_TOKENS = {"-tools", "-dedicated", "-insecure"}
-	alias_pair_count: dict[tuple[str, str], int] = {}
-	raw_relations = []
-	for mod_name, mod in modules.items():
+
+		# A pair of checks is a fact about those two checks, so it is kept on them. The pair is
+		# the last check of the earlier option before its branch, and the next check after it
+		ordered = sorted(mod["sites"], key=va_of)
 		for rel in mod["relations"]:
 			earlier = hash_to_name.get(rel["earlier"])
 			later = hash_to_name.get(rel["later"])
@@ -143,28 +155,37 @@ def build_game(gid: str) -> dict:
 				continue
 			if earlier in GATE_TOKENS and later in GATE_TOKENS:
 				continue
-			target = by_hash.get(rel["later"] if later else rel["earlier"])
-			if target is None:
-				continue
-			raw_relations.append((rel, earlier, later, target))
 			if rel["relation"] == "alternative":
 				pair = tuple(sorted((earlier, later)))
 				alias_pair_count[pair] = alias_pair_count.get(pair, 0) + 1
-
-	def alias_holds_everywhere(a: str, b: str) -> bool:
-		count = alias_pair_count.get(tuple(sorted((a, b))), 0)
-		sites_a = len(by_hash.get(next((h for h, e in by_hash.items() if e["name"] == a), 0), {}).get("sites", []))
-		sites_b = len(by_hash.get(next((h for h, e in by_hash.items() if e["name"] == b), 0), {}).get("sites", []))
-		return sites_a > 0 and sites_b > 0 and count >= sites_a and count >= sites_b
-
-	for rel, earlier, later, target in raw_relations:
-		if rel["relation"] == "requires":
-			target["requires"].add(earlier)
-		else:
-			if not alias_holds_everywhere(earlier, later):
+				alias_pairs.append((earlier, later))
+			elif rel["relation"] != "requires":
 				continue
-			target["alternatives"].add(earlier)
-			by_hash[rel["earlier"]]["alternatives"].add(later)
+			first = next(
+				(s for s in ordered if s["hash"] == rel["earlier"] and 0 <= rel["branch_va"] - va_of(s) < 0x40),
+				None,
+			)
+			second = next((s for s in ordered if va_of(s) == rel.get("later_va")), None)
+			if first is None or second is None:
+				continue
+			# Only the later check depends on the earlier one. Standing in for each other is mutual
+			key, mutual = ("needs", False) if rel["relation"] == "requires" else ("or", True)
+			for site, other in ([(first, later)] if mutual else []) + [(second, earlier)]:
+				shown[id(site)].setdefault(key, []).append(other)
+				by_hash[site["hash"]][key].add(other)
+
+	def sites_of(name: str) -> int:
+		"""Every recorded check of the option, across modules"""
+		h = hash_of(name)
+		return site_total.get(h, 0) if h is not None else 0
+
+	# Two options only stand in for each other when their pair holds at every check of both
+	for earlier, later in alias_pairs:
+		count = alias_pair_count[tuple(sorted((earlier, later)))]
+		if count < sites_of(earlier) or count < sites_of(later):
+			continue
+		by_hash[hash_of(earlier)]["alternatives"].add(later)
+		by_hash[hash_of(later)]["alternatives"].add(earlier)
 
 	options = []
 	VALUE_METHODS = {"string", "cstr", "float", "int", "buffer", "parm"}
@@ -185,8 +206,10 @@ def build_game(gid: str) -> dict:
 					entry["valueTypes"] = types
 			if all_locked:
 				entry["locked"] = True
-			if e["requires"]:
-				entry["requires"] = sorted(e["requires"])
+			if e["needs"]:
+				entry["needs"] = sorted(e["needs"])
+			if e["or"]:
+				entry["or"] = sorted(e["or"])
 			if e["alternatives"]:
 				entry["alternatives"] = sorted(e["alternatives"])
 		if sites:

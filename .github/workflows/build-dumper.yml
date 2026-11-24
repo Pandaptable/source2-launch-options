@@ -6,6 +6,10 @@ on:
 permissions:
   contents: write
 
+env:
+  # SteamTracking/SteamFileDownloader commit to build, the one GameTracking pins as a submodule
+  SFD_REF: aeaae994c92c09ef0b3d5fa2d592aa6ff6936f93
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,14 +21,24 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y mingw-w64
       - run: cargo build --release --manifest-path find-hashes/Cargo.toml --quiet
       - run: cargo build --release --manifest-path find-hashes/Cargo.toml --target x86_64-pc-windows-gnu --quiet
+      - uses: actions/checkout@v4
+        with:
+          repository: SteamTracking/SteamFileDownloader
+          ref: ${{ env.SFD_REF }}
+          path: SteamFileDownloader
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.x
+      - run: dotnet publish SteamFileDownloader/SteamFileDownloader.csproj --configuration Release -p:PublishSingleFile=true -p:PublishReadyToRun=true --self-contained --output sfd --runtime linux-x64 -p:RunAnalyzers=false
       - name: Upload to release
         # An asset is named after its file: gh reads "path#text" as a display label, not a rename
         run: |
           mkdir -p dist
           cp find-hashes/target/release/cs-hash-reversal dist/cs-hash-reversal-linux
           cp find-hashes/target/x86_64-pc-windows-gnu/release/cs-hash-reversal.exe dist/cs-hash-reversal-windows.exe
+          cp sfd/SteamFileDownloader dist/steamfiledownloader-linux
           TAG="dumper"
-          gh release create "$TAG" --title "Dumper binaries" --notes "Prebuilt cs-hash-reversal for CI" 2>/dev/null || true
-          gh release upload "$TAG" dist/cs-hash-reversal-linux dist/cs-hash-reversal-windows.exe --clobber
+          gh release create "$TAG" --title "Dumper binaries" --notes "Prebuilt cs-hash-reversal and SteamFileDownloader for CI" 2>/dev/null || true
+          gh release upload "$TAG" dist/cs-hash-reversal-linux dist/cs-hash-reversal-windows.exe dist/steamfiledownloader-linux --clobber
         env:
           GH_TOKEN: ${{ github.token }}
