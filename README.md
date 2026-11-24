@@ -39,9 +39,9 @@ the dumper resolves names itself: pass `--names launch-options.txt` and it write
 I have a file up to 11 characters (10 character launch option) of hash collisions, if you want access to search through feel free to reach out.
 
 
-binaries are fetched by [SteamFileDownloader](https://github.com/SteamTracking/SteamFileDownloader) (SFD) with `track`, driven by `files.json` at the repo root; they're cached under `depots/`. anonymous works for cs2 + dota; deadlock needs an owned account (pass `--username`/`--password` to SFD).
+binaries are fetched by [SteamFileDownloader](https://github.com/SteamTracking/SteamFileDownloader) (SFD) with `track`, driven by `files.json` at the repo root. `track --output depots` writes the depot's own tree under `depots/`, one app at a time. anonymous works for cs2 + dota; deadlock needs an owned account (pass `--username`/`--password` to SFD).
 
-`./update.sh` runs the pipeline after a fetch: dump (names resolved via `launch-options.txt`) → regenerate site data + `unmapped.txt`. `APPID=<steam app id>` limits it to one game, `--commit` commits and pushes after. CI does the fetch: `.github/workflows/update.yml` downloads the binaries with `sfd track`, then calls `./update.sh --commit`.
+`./update.sh` runs the pipeline after a fetch: dump (names resolved via `launch-options.txt`) → regenerate site data + `unmapped.txt`. `APPID=<steam app id>` says which game is in `depots/` (730=cs2, 570=dota2, 1422450=deadlock), `--commit` commits and pushes after. locally: `SteamFileDownloader track <appid> --output depots`, then `APPID=<appid> ./update.sh`. CI does the same in `.github/workflows/update.yml`.
 other commands
 ```
 # check count of unmapped launch options (all games)
