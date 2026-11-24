@@ -13,6 +13,11 @@ on:
         description: "Steam branch"
         required: false
         default: "public"
+      deploy:
+        description: "Also deploy the site when nothing changed"
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: update
@@ -81,7 +86,7 @@ jobs:
 
       # A commit pushed with the workflow token starts no other workflow
       - name: Deploy site
-        if: steps.update.outputs.pushed == 'true'
+        if: steps.update.outputs.pushed == 'true' || inputs.deploy == true
         run: gh workflow run pages.yml --ref main
         env:
           GH_TOKEN: ${{ github.token }}
