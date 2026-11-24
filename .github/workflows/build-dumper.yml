@@ -18,12 +18,13 @@ jobs:
       - run: cargo build --release --manifest-path find-hashes/Cargo.toml --quiet
       - run: cargo build --release --manifest-path find-hashes/Cargo.toml --target x86_64-pc-windows-gnu --quiet
       - name: Upload to release
+        # An asset is named after its file: gh reads "path#text" as a display label, not a rename
         run: |
+          mkdir -p dist
+          cp find-hashes/target/release/cs-hash-reversal dist/cs-hash-reversal-linux
+          cp find-hashes/target/x86_64-pc-windows-gnu/release/cs-hash-reversal.exe dist/cs-hash-reversal-windows.exe
           TAG="dumper"
           gh release create "$TAG" --title "Dumper binaries" --notes "Prebuilt cs-hash-reversal for CI" 2>/dev/null || true
-          gh release upload "$TAG" \
-            find-hashes/target/release/cs-hash-reversal#cs-hash-reversal-linux \
-            find-hashes/target/x86_64-pc-windows-gnu/release/cs-hash-reversal.exe#cs-hash-reversal-windows.exe \
-            --clobber
+          gh release upload "$TAG" dist/cs-hash-reversal-linux dist/cs-hash-reversal-windows.exe --clobber
         env:
           GH_TOKEN: ${{ github.token }}

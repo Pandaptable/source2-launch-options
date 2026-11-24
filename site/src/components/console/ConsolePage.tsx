@@ -13,12 +13,15 @@ import { styled } from "@linaria/react";
 import { getGameContext, type GameContext } from "../../data/options";
 import { GAME_LIST, dumpFileUrl, getGameDef, type GameId } from "../../games-list";
 import { buildHash, useHashParam, useHydrated } from "../../utils/filtering";
+import type { ConsoleItem } from "../../data/types";
 import { countBy } from "../../utils/collections";
-import { formatCount, plural } from "../../utils/format";
+import { TIER_EXACT } from "../../utils/match-score";
 import {
-  consoleCountsText,
+  filterConsoleItems,
   getConsoleStats,
   getTagState,
+  itemFlags,
+  itemTypes,
   moduleFilter,
   nextTagState,
   parseConsoleSearch,
@@ -26,6 +29,8 @@ import {
   searchConsoleResults,
   setSearchTag,
   stripConsoleFilters,
+  typeFilter,
+  withoutFlag,
   type ConsoleKind,
   type ConsoleMatch,
   type FilterTag,
@@ -83,6 +88,17 @@ function inModules(
   return matches.filter(({ item }) => matchesModules(item));
 }
 
+/** The matches that pass the type filters */
+function inTypes(
+  matches: ConsoleMatch[],
+  matchesTypes: ReturnType<typeof typeFilter>,
+): ConsoleMatch[] {
+  if (!matchesTypes) return matches;
+  return matches.filter(({ item }) => matchesTypes(item));
+}
+
+const asMatch = (item: ConsoleItem): ConsoleMatch => ({ item, tier: TIER_EXACT });
+
 /** Filter state shared by the sidebar and the list. All of it lives in the URL hash */
 function useConsoleFilters() {
   const { consoleItems } = useContext(DeclarationsContext);
@@ -94,7 +110,6 @@ function useConsoleFilters() {
       ? kindParam
       : "all";
 
-
   const navigate = useNavigate();
   const stats = getConsoleStats(consoleItems);
   // An #kind=unmapped link from when the dump had unknowns would show an empty list
@@ -103,11 +118,13 @@ function useConsoleFilters() {
   const deferredSearch = useDeferredValue(search);
   const parsed = useMemo(() => parseConsoleSearch(deferredSearch), [deferredSearch]);
 
-  const { visible, similar, kindCounts, moduleCounts } = useMemo(() => {
-    // One scored pass without module filters, which the per-module counts ignore anyway
-    const found = searchConsoleItems(consoleItems, parsed, { ignoreModules: true });
+  const { visible, similar, kindCounts, moduleCounts, typeCounts, flagCounts } = useMemo(() => {
+    // One scored pass without module and type filters, which their own counts ignore anyway
+    const found = searchConsoleItems(consoleItems, parsed, { ignoreModules: true, ignoreTypes: true });
     const matchesModules = moduleFilter(parsed, stats);
-    const allKinds = inModules(found.results, matchesModules);
+    const matchesTypes = typeFilter(parsed, stats);
+    const rest = inTypes(found.results, matchesTypes);
+    const allKinds = inModules(rest, matchesModules);
     let convars = 0;
     let unmapped = 0;
     let values = 0;
@@ -120,14 +137,36 @@ function useConsoleFilters() {
     const visible = inKind(allKinds, effKind);
 
     // Names that only match fuzzily are listed apart. None of the counts include them
-    const similar = inKind(inModules(found.similar, matchesModules), effKind);
+    const similar = inKind(
+      inModules(inTypes(found.similar, matchesTypes), matchesModules),
+      effKind,
+    );
 
-    const moduleMatches = matchesModules ? inKind(found.results, effKind) : visible;
+    // Each group's chips count what they would add to every other filter
+    const moduleMatches = matchesModules ? inKind(rest, effKind) : visible;
+    const typeMatches = matchesTypes
+      ? inKind(inModules(found.results, matchesModules), effKind)
+      : visible;
+
+    // Every other active filter already narrowed `visible`, so counting flags there gives each
+    // unselected flag's count. A flag that is included or excluded needs its own lifted first
+    const flagCounts = countBy(visible, ({ item }) => itemFlags(item));
+    for (const flag of new Set([...parsed.flags, ...parsed.notFlags])) {
+      const others = withoutFlag(parsed, flag);
+      flagCounts.set(
+        flag,
+        inKind(filterConsoleItems(consoleItems, others).map(asMatch), effKind).filter(
+          ({ item }) => itemFlags(item).includes(flag),
+        ).length,
+      );
+    }
     return {
       visible,
       similar,
       kindCounts: { all: allKinds.length, convars, commands, unmapped, values },
       moduleCounts: countBy(moduleMatches, ({ item }) => item.modules),
+      typeCounts: countBy(typeMatches, ({ item }) => itemTypes(item)),
+      flagCounts,
     };
   }, [consoleItems, parsed, effKind, stats]);
 
@@ -194,6 +233,8 @@ function useConsoleFilters() {
       similar,
       kindCounts,
       moduleCounts,
+      typeCounts,
+      flagCounts,
       cycleTag,
       includeTag,
       setKind,
@@ -209,6 +250,8 @@ function useConsoleFilters() {
       similar,
       kindCounts,
       moduleCounts,
+      typeCounts,
+      flagCounts,
       cycleTag,
       includeTag,
       setKind,

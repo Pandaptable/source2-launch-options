@@ -20,7 +20,7 @@ import { joinLoneTags, trimNameWord } from "./search-words";
 export type ConsoleKind = "all" | "convars" | "commands" | "values" | "unmapped";
 
 /** Tags that have filter chips */
-export type FilterTag = "module:" | "type:";
+export type FilterTag = "module:" | "type:" | "flag:";
 
 export type TagState = "off" | "include" | "exclude";
 
@@ -49,9 +49,11 @@ export interface ParsedConsoleSearch {
   notModules: string[];
   types: string[];
   notTypes: string[];
+  flags: string[];
+  notFlags: string[];
 }
 
-const CONSOLE_TAGS = ["module:", "type:"] as const;
+const CONSOLE_TAGS = ["module:", "type:", "flag:"] as const;
 
 export function isConsoleFilterWord(word: string): boolean {
   const w = word.startsWith("-") ? word.slice(1) : word;
@@ -78,6 +80,8 @@ export function parseConsoleSearch(search: string): ParsedConsoleSearch {
     notModules: [],
     types: [],
     notTypes: [],
+    flags: [],
+    notFlags: [],
   };
 
   const split = search.toLowerCase().split(/\s+/);
@@ -95,6 +99,9 @@ export function parseConsoleSearch(search: string): ParsedConsoleSearch {
     } else if (tag === "type:") {
       const list = negated ? parsed.notTypes : parsed.types;
       if (value) list.push(value);
+    } else if (tag === "flag:") {
+      const list = negated ? parsed.notFlags : parsed.flags;
+      if (value) list.push(value);
     } else {
       const nameWord = trimConsoleNameWord(word);
       if (nameWord) parsed.nameWords.push(nameWord);
@@ -109,11 +116,36 @@ function keysByCount(counts: Map<string, number>): string[] {
   return [...counts.keys()].sort((a, b) => counts.get(b)! - counts.get(a)! || (a < b ? -1 : 1));
 }
 
-/** Every module and value type with its item count, and the keys most used first */
+/** The boolean properties of an option, each filterable as flag:<name> */
+export const FLAGS: Record<string, { label: string; tip: string }> = {
+  locked: {
+    label: "Lock-gated",
+    tip: "Every check of this option is lock-gated: it only answers when the process is launched with -tools, -dedicated or -insecure",
+  },
+  shared: { label: "Also in other games", tip: "Other games' binaries check this token too" },
+  needs: {
+    label: "Depends on other options",
+    tip: "This option's check only runs when other launch options are present too",
+  },
+  alias: { label: "Has aliases", tip: "The same check accepts other tokens in place of this one" },
+};
+
+/** The flags an option has */
+export function itemFlags(item: ConsoleItem): string[] {
+  const flags: string[] = [];
+  if (item.locked) flags.push("locked");
+  if (item.elsewhere?.length) flags.push("shared");
+  if (item.requires?.length) flags.push("needs");
+  if (item.alternatives?.length) flags.push("alias");
+  return flags;
+}
+
+/** Every module, value type and flag with its item count, and the keys most used first */
 export interface ConsoleStats {
   modules: Map<string, number>;
   types: Map<string, number>;
-  sorted: { modules: string[]; types: string[] };
+  flags: Map<string, number>;
+  sorted: { modules: string[]; types: string[]; flags: string[] };
   /** "-" flags */
   convars: number;
   /** "+" commands */
@@ -138,10 +170,16 @@ export function getConsoleStats(items: ConsoleItem[]): ConsoleStats {
   const commands = items.filter((i) => i.kind === "command").length;
   const modules = countBy(items, (i) => i.modules);
   const types = countBy(items, itemTypes);
+  const flags = countBy(items, itemFlags);
   stats = {
     modules,
     types,
-    sorted: { modules: keysByCount(modules), types: keysByCount(types) },
+    flags,
+    sorted: {
+      modules: keysByCount(modules),
+      types: keysByCount(types),
+      flags: keysByCount(flags),
+    },
     convars,
     commands,
     unmapped: items.length - convars - commands,
@@ -194,6 +232,43 @@ export function typeFilter(
       !types.some((t) => exclude.some((p) => p(t)))
     );
   };
+}
+
+/** flag: (every one of them) and -flag: (none of them), or null without flag filters */
+export function flagFilter(
+  parsed: ParsedConsoleSearch,
+  stats: ConsoleStats,
+): ((item: ConsoleItem) => boolean) | null {
+  const include = valuePredicates(parsed.flags, stats.flags);
+  const exclude = valuePredicates(parsed.notFlags, stats.flags);
+  if (include.length === 0 && exclude.length === 0) return null;
+  return (item) => {
+    const flags = itemFlags(item);
+    return include.every((p) => flags.some(p)) && !flags.some((f) => exclude.some((p) => p(f)));
+  };
+}
+
+/** The same search with one flag's include and exclude lifted, to count that flag */
+export function withoutFlag(parsed: ParsedConsoleSearch, flag: string): ParsedConsoleSearch {
+  if (!parsed.flags.includes(flag) && !parsed.notFlags.includes(flag)) return parsed;
+  return {
+    ...parsed,
+    flags: parsed.flags.filter((f) => f !== flag),
+    notFlags: parsed.notFlags.filter((f) => f !== flag),
+  };
+}
+
+/** Whether the search has any module:, type: or flag: tag */
+export function hasTagFilters(parsed: ParsedConsoleSearch): boolean {
+  return (
+    parsed.modules.length +
+      parsed.notModules.length +
+      parsed.types.length +
+      parsed.notTypes.length +
+      parsed.flags.length +
+      parsed.notFlags.length >
+    0
+  );
 }
 
 /** An item a search found, the item itself kept as it is */
@@ -316,17 +391,20 @@ export interface ConsoleFilterOptions {
   kind?: ConsoleKind;
   /** Skip module:/-module: filters, for per-module chip counts */
   ignoreModules?: boolean;
+  /** Skip type:/-type: filters, for per-type chip counts */
+  ignoreTypes?: boolean;
 }
 
 /** The items that pass every filter of the search but its name words, in item order */
 function filterByTags(
   items: ConsoleItem[],
   parsed: ParsedConsoleSearch,
-  { kind = "all", ignoreModules = false }: ConsoleFilterOptions,
+  { kind = "all", ignoreModules = false, ignoreTypes = false }: ConsoleFilterOptions,
 ): ConsoleItem[] {
   const stats = getConsoleStats(items);
   const matchesModules = ignoreModules ? null : moduleFilter(parsed, stats);
-  const matchesTypes = typeFilter(parsed, stats);
+  const matchesTypes = ignoreTypes ? null : typeFilter(parsed, stats);
+  const matchesFlags = flagFilter(parsed, stats);
 
   const tagged: ConsoleItem[] = [];
   for (const item of items) {
@@ -334,6 +412,7 @@ function filterByTags(
     if (kind === "commands" && item.kind !== "command") continue;
     if (matchesModules && !matchesModules(item)) continue;
     if (matchesTypes && !matchesTypes(item)) continue;
+    if (matchesFlags && !matchesFlags(item)) continue;
     tagged.push(item);
   }
   return tagged;
@@ -470,16 +549,23 @@ export function stripConsoleFilters(search: string): string {
   return words.filter((w) => w && !isConsoleFilterWord(w.toLowerCase())).join(" ");
 }
 
+const TAG_LISTS = {
+  "module:": ["modules", "notModules"],
+  "type:": ["types", "notTypes"],
+  "flag:": ["flags", "notFlags"],
+} as const;
+
 export function getTagState(parsed: ParsedConsoleSearch, tag: FilterTag, value: string): TagState {
   const lower = value.toLowerCase();
-  const [include, exclude] =
-    tag === "module:" ? [parsed.modules, parsed.notModules] : [parsed.types, parsed.notTypes];
-  if (include.includes(lower)) return "include";
-  if (exclude.includes(lower)) return "exclude";
+  const [included, excluded] = TAG_LISTS[tag];
+  if (parsed[included].includes(lower)) return "include";
+  if (parsed[excluded].includes(lower)) return "exclude";
   return "off";
 }
 
+// Flag chips cycle off → include → exclude. Module and type chips only toggle; a leading "-" excludes
 const NEXT_TAG_STATE: Record<FilterTag, Record<TagState, TagState>> = {
+  "flag:": { off: "include", include: "exclude", exclude: "off" },
   "module:": { off: "include", include: "off", exclude: "off" },
   "type:": { off: "include", include: "off", exclude: "off" },
 };

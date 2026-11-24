@@ -5,7 +5,7 @@ import { HighlightRanges } from "../search/Highlight";
 import { GameIcon, KindIcon } from "../kind-icon/KindIcon";
 import type { GameId } from "../../games-list";
 import { tip } from "../Tooltip";
-import { getConsoleStats, itemTypes, type FilterTag } from "../../utils/console-filtering";
+import { FLAGS, getConsoleStats, itemTypes, type FilterTag } from "../../utils/console-filtering";
 import { hover, hoverAndPress } from "../interaction-styles";
 import { DeclarationsContext } from "../OptionsContext";
 
@@ -77,6 +77,18 @@ function ModuleBadge({ module, onClick }: { module: string; onClick?: () => void
     <FlagChip>{content}</FlagChip>
   );
 }
+
+/** A flag chip, and a filter button when the list can filter */
+function FlagBadge({ flag, onClick }: { flag: string; onClick?: () => void }) {
+  return onClick ? (
+    <FlagChipButton onClick={onClick} {...tip(FLAGS[flag].tip)}>
+      {flag}
+    </FlagChipButton>
+  ) : (
+    <FlagChip {...tip(FLAGS[flag].tip)}>{flag}</FlagChip>
+  );
+}
+
 /** Modified clicks open links normally instead of navigating in place */
 export function isPlainLeftClick(e: MouseEvent): boolean {
   return e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey;
@@ -144,9 +156,26 @@ const Name = styled.a`
 `;
 
 /** Blue like builtin types on the schema pages */
-const Type = styled.span`
+const typeText = `
+  font: inherit;
   font-size: 14px;
   color: var(--syntax-literal);
+`;
+
+const Type = styled.span`
+  ${typeText}
+`;
+
+const TypeButton = styled.button`
+  ${typeText}
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const Value = styled.span`
@@ -306,22 +335,22 @@ export const ConsoleRow = memo(function ConsoleRow({
         >
           {nameRanges ? <HighlightRanges text={label} ranges={nameRanges} /> : label}
         </Name>
-        {itemTypes(item).map((t) => (
-          <Type key={t}>{t}</Type>
-        ))}
+        {itemTypes(item).map((t) =>
+          onFilter ? (
+            <TypeButton key={t} onClick={() => onFilter("type:", t)} title={`Filter by type:${t}`}>
+              {t}
+            </TypeButton>
+          ) : (
+            <Type key={t}>{t}</Type>
+          ),
+        )}
         <Value {...tip("MurmurHash2 token hash (seed 0x31415926) of the token, decimal, what the binary compares")}>
           {String(item.hash)}
         </Value>
         <Range {...tip("The same token hash, hexadecimal")}>0x{item.hash.toString(16)}</Range>
         <Chips>
           {item.locked && (
-            <FlagChip
-              {...tip(
-                "Every check of this option is lock-gated: it only answers when the process is launched with -tools, -dedicated or -insecure",
-              )}
-            >
-              locked
-            </FlagChip>
+            <FlagBadge flag="locked" onClick={onFilter && (() => onFilter("flag:", "locked"))} />
           )}
           {item.elsewhere?.map((g) => (
             <Elsewhere key={g} {...tip(`Also checked by ${g} binaries`)} aria-label={g}>

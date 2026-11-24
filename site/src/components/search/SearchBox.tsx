@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { buildHash } from "../../utils/filtering";
-import { getConsoleStats } from "../../utils/console-filtering";
+import { FLAGS, getConsoleStats } from "../../utils/console-filtering";
 import { styled } from "@linaria/react";
 import { hover } from "../interaction-styles";
 import { SearchContext } from "./SearchContext";
@@ -53,6 +53,18 @@ const SEARCH_TAGS: readonly SearchTag[] = [
     description: "Filter by module that checks the option",
     example: "e.g. module:engine2.dll",
   },
+  {
+    tag: "flag:",
+    icon: "flag",
+    description: "Filter by a property of the option, like being lock-gated",
+    example: "e.g. flag:locked",
+  },
+  {
+    tag: "type:",
+    icon: "meta-variable",
+    description: "Filter by the type of value the option reads",
+    example: "e.g. type:int",
+  },
 ];
 
 function getLastWord(input: string): string {
@@ -65,7 +77,7 @@ function shouldShowFirstLevelPopup(input: string): boolean {
   return !getLastWord(input).includes(":");
 }
 
-/** A module tag can be negated with a leading "-" */
+/** Any filter tag can be negated with a leading "-" */
 function negationPrefix(word: string): "-" | "" {
   return word.startsWith("-") ? "-" : "";
 }
@@ -113,9 +125,19 @@ function getSecondLevelContext(
   return null;
 }
 
-function getModuleSuggestions(items: ConsoleItem[]): ValueSuggestions[] {
-  const { sorted, modules } = getConsoleStats(items);
-  return [{ tag: "module:", header: "Modules", values: sorted.modules, counts: modules }];
+function getTagValueSuggestions(items: ConsoleItem[]): ValueSuggestions[] {
+  const { sorted, modules, types, flags } = getConsoleStats(items);
+  return [
+    {
+      tag: "flag:",
+      header: "Flags",
+      values: sorted.flags,
+      counts: flags,
+      label: (v) => FLAGS[v]?.label ?? v,
+    },
+    { tag: "type:", header: "Value types", values: sorted.types, counts: types },
+    { tag: "module:", header: "Modules", values: sorted.modules, counts: modules },
+  ];
 }
 
 const SearchBoxWrapper = styled.div`
@@ -280,7 +302,7 @@ function ValueSuggestPopup({
         {values.map((v, i) => {
           const name = label?.(v);
           return (
-        // oxlint-disable-next-line jsx-a11y/interactive-supports-focus
+            // oxlint-disable-next-line jsx-a11y/interactive-supports-focus
             // oxlint-disable-next-line jsx-a11y/interactive-supports-focus
             <TagItem
               key={v}
@@ -368,7 +390,7 @@ export function SearchBox({ className }: { className?: string }) {
     setInputValue(urlSearch);
   }, [location.hash]);
 
-  const valueSuggestions = useMemo(() => getModuleSuggestions(consoleItems), [consoleItems]);
+  const valueSuggestions = useMemo(() => getTagValueSuggestions(consoleItems), [consoleItems]);
 
   const lastWord = getLastWord(inputValue);
   const filteredTags = filterTags(SEARCH_TAGS, lastWord);

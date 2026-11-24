@@ -1,7 +1,9 @@
 import { memo, useState } from "react";
 import { styled } from "@linaria/react";
 import {
+  FLAGS,
   getTagState,
+  hasTagFilters,
   type FilterTag,
   type ParsedConsoleSearch,
   type TagState,
@@ -18,11 +20,17 @@ const KINDS = [
   { kind: "unmapped", label: "Unmapped", icon: "flag" },
 ] as const;
 
-// Flags explain themselves in their tooltip instead. Modules don't have one
-const MODULE_TITLE: Record<TagState, (value: string) => string> = {
+// A chip's tooltip says what clicking it does. Flags add what the flag means, since their names don't
+const TAG_TITLE: Record<TagState, (value: string) => string> = {
   off: (v) => `Only show ${v}`,
   include: (v) => `Stop filtering by ${v}`,
   exclude: (v) => `Stop filtering by ${v}`,
+};
+
+const FLAG_TITLE: Record<TagState, (flag: string) => string> = {
+  off: (f) => `Only show options that are ${f}. ${FLAGS[f]?.tip ?? ""}`,
+  include: (f) => `Click again to hide options that are ${f}`,
+  exclude: (f) => `Stop hiding options that are ${f}`,
 };
 
 /** Convars, commands, or both, above the list where it stays in view */
@@ -47,18 +55,38 @@ export const ConsoleSidebar = memo(function ConsoleSidebar({
 }: {
   filters: ConsoleFilters;
 }) {
-  const { kind, moduleCounts, stats, parsed, cycleTag, clearFilters } = filters;
-  const hasFilters = kind !== "all" || parsed.modules.length + parsed.notModules.length > 0;
+  const { kind, moduleCounts, typeCounts, flagCounts, stats, parsed, cycleTag, clearFilters } =
+    filters;
+  const hasFilters = kind !== "all" || hasTagFilters(parsed);
 
   return (
     <>
       <SidebarList>
+        <TagGroup
+          title="Flags"
+          tag="flag:"
+          values={stats.sorted.flags}
+          counts={flagCounts}
+          parsed={parsed}
+          titleOf={FLAG_TITLE}
+          onToggle={cycleTag}
+        />
+        <TagGroup
+          title="Types"
+          tag="type:"
+          values={stats.sorted.types}
+          counts={typeCounts}
+          parsed={parsed}
+          titleOf={TAG_TITLE}
+          onToggle={cycleTag}
+        />
         <TagGroup
           title="Modules"
           tag="module:"
           values={stats.sorted.modules}
           counts={moduleCounts}
           parsed={parsed}
+          titleOf={TAG_TITLE}
           onToggle={cycleTag}
         />
       </SidebarList>
@@ -98,6 +126,7 @@ function TagGroup({
   values,
   counts,
   parsed,
+  titleOf,
   onToggle,
 }: {
   title: string;
@@ -105,6 +134,7 @@ function TagGroup({
   values: string[];
   counts: Map<string, number>;
   parsed: ParsedConsoleSearch;
+  titleOf: Record<TagState, (value: string) => string>;
   onToggle: (tag: FilterTag, value: string) => void;
 }) {
   return (
@@ -118,7 +148,7 @@ function TagGroup({
             data-state={state}
             data-empty={count === 0 || undefined}
             aria-pressed={state === "include"}
-            title={MODULE_TITLE[state](v)}
+            title={titleOf[state](v)}
             onClick={() => onToggle(tag, v)}
           >
             <ShowRowSpacer />
