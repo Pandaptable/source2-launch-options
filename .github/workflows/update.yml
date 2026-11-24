@@ -20,6 +20,8 @@ concurrency:
 
 permissions:
   contents: write
+  # To start the site deploy after a pushed update
+  actions: write
 
 jobs:
   update:
