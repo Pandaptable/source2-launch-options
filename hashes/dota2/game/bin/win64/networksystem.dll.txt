@@ -15,7 +15,6 @@
 -use_valve_ice, 2431048809
 -sse3, 2776830954
 -avx, 3020312170
--snallownoauth, 3371237308
 -perfectworld, 3451720338
 -networkspewfakefields, 4002657759
 -networkspewentity, 4228365612

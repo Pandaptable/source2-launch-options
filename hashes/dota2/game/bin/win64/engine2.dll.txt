@@ -89,6 +89,7 @@
 -heapcheck, 1892883470
 -conrotate, 1937598139
 -logstdiotofile, 1997211886
+2005827063
 -full_memory_dumps, 2037331155
 -nohltv, 2074638849
 -textlanguage, 2115173857
@@ -135,6 +136,7 @@
 -insecure_forced_by_launcher, 3075429066
 -full_render_callback_clear, 3079672404
 -panoconsole, 3079965285
+3157844845
 -language, 3191848936
 -spewserializers, 3223879006
 -allocfailmb, 3228107479
@@ -146,7 +148,6 @@
 -nominidumps, 3326958702
 -benchnote, 3366757130
 -profilemapload_noquit, 3368143839
--snallownoauth, 3371237308
 -perfectworld, 3451720338
 -ioidlecheck, 3468939281
 -set_power_qos_disable, 3478593498
@@ -169,6 +170,7 @@
 -devcontent, 3985700755
 -nopriorityboost, 3985938959
 -noconfig, 4015530479
+-spew_detailed_cpu_info, 4088754579
 -dxwarp, 4184646854
 -asyncconsole, 4210168119
 -servertime, 4210410144

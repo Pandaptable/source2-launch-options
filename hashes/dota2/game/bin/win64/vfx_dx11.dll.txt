@@ -3,6 +3,7 @@
 -sse4, 1849011768
 -slang_dump_intermediates, 2058322002
 -slang, 2376454584
+-shadercache_dir, 2568441053
 -sse3, 2776830954
 -avx, 3020312170
 -log_reflection, 3521769074

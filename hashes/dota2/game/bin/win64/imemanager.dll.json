@@ -6,8 +6,8 @@
       "method": "flag",
       "gate": "open",
       "value": false,
-      "va": "0x18000DA69",
-      "fn": "0x18000D880"
+      "va": "0x18000DAC9",
+      "fn": "0x18000D8E0"
     }
   ],
   "relations": [],

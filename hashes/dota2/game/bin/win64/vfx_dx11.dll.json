@@ -6,8 +6,8 @@
       "method": "flag",
       "gate": "open",
       "value": false,
-      "va": "0x1800479E2",
-      "fn": "0x1800476F0"
+      "va": "0x180047C42",
+      "fn": "0x180047950"
     },
     {
       "hash": 1306516389,
@@ -15,8 +15,8 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x18001C230",
-      "fn": "0x18001C0C0"
+      "va": "0x18001C260",
+      "fn": "0x18001C0F0"
     },
     {
       "hash": 1849011768,
@@ -33,8 +33,8 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x18001C2D6",
-      "fn": "0x18001C0C0"
+      "va": "0x18001C306",
+      "fn": "0x18001C0F0"
     },
     {
       "hash": 2376454584,
@@ -42,8 +42,17 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x18001C0A8",
-      "fn": "0x18001C030"
+      "va": "0x18001C0D8",
+      "fn": "0x18001C060"
+    },
+    {
+      "hash": 2568441053,
+      "slot": 88,
+      "method": "cstr",
+      "gate": "locked",
+      "value": true,
+      "va": "0x18004887B",
+      "fn": "0x180048850"
     },
     {
       "hash": 2776830954,
@@ -69,8 +78,8 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x18001CFAB",
-      "fn": "0x18001CF1C"
+      "va": "0x18001CFDB",
+      "fn": "0x18001CF4C"
     },
     {
       "hash": 3521769074,
@@ -78,8 +87,8 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x18001D4A4",
-      "fn": "0x18001CF1C"
+      "va": "0x18001D4D4",
+      "fn": "0x18001CF4C"
     },
     {
       "hash": 3521769074,
@@ -87,8 +96,8 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x18001D67C",
-      "fn": "0x18001CF1C"
+      "va": "0x18001D6AC",
+      "fn": "0x18001CF4C"
     },
     {
       "hash": 3521769074,
@@ -96,8 +105,8 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x18001DBDA",
-      "fn": "0x18001CF1C"
+      "va": "0x18001DC0A",
+      "fn": "0x18001CF4C"
     },
     {
       "hash": 3521769074,
@@ -105,8 +114,8 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x18001DEC7",
-      "fn": "0x18001CF1C"
+      "va": "0x18001DEF7",
+      "fn": "0x18001CF4C"
     },
     {
       "hash": 3521769074,
@@ -114,8 +123,8 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x18001DFD0",
-      "fn": "0x18001DFA6"
+      "va": "0x18001E000",
+      "fn": "0x18001DFD6"
     },
     {
       "hash": 4274893216,

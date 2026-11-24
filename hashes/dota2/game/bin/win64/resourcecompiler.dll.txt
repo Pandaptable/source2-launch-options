@@ -49,6 +49,7 @@
 -msaa, 1449492945
 -lightmapdeterministiccharts, 1479722877
 -w, 1610683921
+1732479632
 -normalvis, 1743092877
 -nv, 1751934355
 -parallelhammerrenderables, 1788282970
@@ -57,6 +58,7 @@
 -consolelog_append, 1849850619
 -conrotate, 1937598139
 -logstdiotofile, 1997211886
+2005827063
 -full_memory_dumps, 2037331155
 -fastpack, 2129537917
 -extract_sentence, 2260033171
@@ -82,12 +84,14 @@
 --force_return_cell_binding, 2912373279
 -vconport, 3008056938
 -avx, 3020312170
+3046097161
 -border, 3067777132
 -coop_fullscreen, 3231905404
 -fullscreen, 3232779058
 -anim_compile_stats, 3254258045
 -nop4, 3299646795
 -no_hierarchical_vpk_memory_mapping, 3378808146
+3462017487
 -net_codegen_debugfield, 3489200015
 -gpuraytracing, 3529211103
 -vrad3, 3532387015

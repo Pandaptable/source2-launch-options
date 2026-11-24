@@ -6,8 +6,8 @@
       "method": "flag",
       "gate": "open",
       "value": false,
-      "va": "0x180001835",
-      "fn": "0x1800017E0"
+      "va": "0x180001895",
+      "fn": "0x180001840"
     },
     {
       "hash": 2133286778,
@@ -15,8 +15,8 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x180001851",
-      "fn": "0x1800017E0"
+      "va": "0x1800018B1",
+      "fn": "0x180001840"
     },
     {
       "hash": 3299646795,
@@ -24,8 +24,8 @@
       "method": "index",
       "gate": "locked",
       "value": false,
-      "va": "0x180001870",
-      "fn": "0x1800017E0"
+      "va": "0x1800018D0",
+      "fn": "0x180001840"
     }
   ],
   "relations": [],

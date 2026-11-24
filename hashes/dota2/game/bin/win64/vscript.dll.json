@@ -6,8 +6,8 @@
       "method": "flag",
       "gate": "open",
       "value": false,
-      "va": "0x18005A709",
-      "fn": "0x18005A520"
+      "va": "0x18005A829",
+      "fn": "0x18005A640"
     },
     {
       "hash": 197456290,
@@ -15,8 +15,8 @@
       "method": "flag",
       "gate": "open",
       "value": false,
-      "va": "0x18005B282",
-      "fn": "0x18005AF90"
+      "va": "0x18005B402",
+      "fn": "0x18005B110"
     },
     {
       "hash": 1849011768,
@@ -33,8 +33,8 @@
       "method": "flag",
       "gate": "locked",
       "value": false,
-      "va": "0x18001B444",
-      "fn": "0x18001B400"
+      "va": "0x18001B534",
+      "fn": "0x18001B4F0"
     },
     {
       "hash": 2776830954,
@@ -60,8 +60,8 @@
       "method": "cstr",
       "gate": "locked",
       "value": true,
-      "va": "0x18000EB92",
-      "fn": "0x18000EAF0"
+      "va": "0x18000EBE2",
+      "fn": "0x18000EB40"
     },
     {
       "hash": 3945205914,

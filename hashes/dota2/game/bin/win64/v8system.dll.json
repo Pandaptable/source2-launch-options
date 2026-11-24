@@ -6,8 +6,8 @@
       "method": "flag",
       "gate": "open",
       "value": false,
-      "va": "0x180004139",
-      "fn": "0x180003F50"
+      "va": "0x180003699",
+      "fn": "0x1800034B0"
     },
     {
       "hash": 197456290,
@@ -15,8 +15,8 @@
       "method": "flag",
       "gate": "open",
       "value": false,
-      "va": "0x180013632",
-      "fn": "0x180013340"
+      "va": "0x180004202",
+      "fn": "0x180003F10"
     }
   ],
   "relations": [],

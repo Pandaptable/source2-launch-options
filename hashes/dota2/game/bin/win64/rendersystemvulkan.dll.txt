@@ -23,6 +23,7 @@
 -force_recommend_dx11, 1014489924
 -noassert, 1067982513
 -vulkan_disable_ext_depth_bias_control, 1072387495
+1076993514
 -vulkan_enable_ext_device_generated_commands, 1183232867
 -vulkan_disable_steam_downloaded_shader_cache, 1222989069
 -renderdoc_capture_validation_errors, 1238242786
@@ -45,6 +46,7 @@
 -vulkan_disable_ext_memory_budget, 1626377711
 -multigpu, 1731710107
 -vulkan_disable_khr_shader_integer_dot_product, 1735596800
+1744630599
 -vulkan_disable_ext_full_screen_exclusive, 1814560080
 -disable_async_shaders, 1843755095
 -sse4, 1849011768
@@ -53,6 +55,7 @@
 -vulkan_enable_nv_raytracing_validation, 1957510917
 -renderdoc, 1980692650
 -autoconfig_level, 1997326025
+2080957601
 -vulkan_disable_ext_opacity_micromap, 2179270029
 -vulkanrenderthreadstack, 2194226460
 -noaftermath, 2299247585
@@ -62,6 +65,7 @@
 -noinitfallbacktextures, 2462688185
 -vulkan_disable_ext_pipeline_creation_cache_control, 2479980372
 -vulkan_disable_khr_synchronization2, 2537109703
+-shadercache_dir, 2568441053
 -vulkan_validation_error_exit_success, 2601499734
 -vulkan_disable_khr_shader_clock, 2626482410
 -reflex, 2642521732
@@ -70,7 +74,6 @@
 -vulkan_descriptor_sets_per_pool, 2709253051
 -vulkan_disable_ext_extended_dynamic_state_3, 2717407942
 -sse3, 2776830954
--vulkan_disable_khr_present_wait, 2777541204
 -noantilag, 2848325155
 -vulkan_disable_khr_dynamic_rendering, 2888494261
 -vulkan_ignore_ctdl_bindless_non_blocking_issues, 2915211924
