@@ -91,7 +91,7 @@
 -anim_compile_stats, 3254258045
 -nop4, 3299646795
 -no_hierarchical_vpk_memory_mapping, 3378808146
-3462017487
+-vrad3_vprofjson, 3462017487
 -net_codegen_debugfield, 3489200015
 -gpuraytracing, 3529211103
 -vrad3, 3532387015

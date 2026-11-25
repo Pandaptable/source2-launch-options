@@ -1419,6 +1419,7 @@
 -vrad3largeblocksize, 2327613413
 -vrad3writedebug, 166991432
 -vrad3writedebugcolor, 3927707608
+-vrad3_vprofjson, 3462017487
 -vscriptdebug, 3616760377
 -vscriptdebug_game, 4265542941
 -vscriptdebug_script, 3917576620
