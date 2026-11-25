@@ -89,7 +89,7 @@
 -heapcheck, 1892883470
 -conrotate, 1937598139
 -logstdiotofile, 1997211886
-2005827063
+-1440, 2005827063
 -full_memory_dumps, 2037331155
 -nohltv, 2074638849
 -textlanguage, 2115173857

@@ -566,11 +566,11 @@ export function getTagState(parsed: ParsedConsoleSearch, tag: FilterTag, value: 
   return "off";
 }
 
-// Flag chips cycle off → include → exclude. Module and type chips only toggle; a leading "-" excludes
+// Every chip cycles off → include → exclude
 const NEXT_TAG_STATE: Record<FilterTag, Record<TagState, TagState>> = {
   "flag:": { off: "include", include: "exclude", exclude: "off" },
-  "module:": { off: "include", include: "off", exclude: "off" },
-  "type:": { off: "include", include: "off", exclude: "off" },
+  "module:": { off: "include", include: "exclude", exclude: "off" },
+  "type:": { off: "include", include: "exclude", exclude: "off" },
 };
 
 export function nextTagState(tag: FilterTag, state: TagState): TagState {

@@ -45,6 +45,25 @@ def parse_dump(path: Path) -> tuple[dict[str, int], list[int]]:
 			unmapped.append(int(line))
 	return options, unmapped
 
+def load_names() -> dict[int, str]:
+	names: dict[int, str] = {}
+	for line in (ROOT / "launch-options.txt").read_text(encoding="utf-8", errors="replace").splitlines():
+		m = NAMED_RE.match(line.strip())
+		if m:
+			names[int(m.group("hash"))] = m.group("name")
+	return names
+
+def apply_names(names: dict[int, str]) -> int:
+	"""Name the bare hash lines in the dumps that launch-options.txt has named since they were written."""
+	renamed = 0
+	for path in sorted(HASHES_DIR.rglob("*.txt")):
+		lines = path.read_text(encoding="utf-8", errors="replace").split("\n")
+		named = [f"{names[int(line)]}, {line}" if BARE_RE.match(line) and int(line) in names else line for line in lines]
+		if named != lines:
+			path.write_text("\n".join(named), encoding="utf-8")
+			renamed += sum(a != b for a, b in zip(named, lines))
+	return renamed
+
 def load_sidecar(path: Path) -> dict:
 	sidecar = path.with_suffix(".json")
 	if not sidecar.is_file():
@@ -232,25 +251,41 @@ def build_game(gid: str) -> dict:
 		"options": options,
 	}
 
+def dump_binary(path: str) -> str:
+	"""`hashes/<game>/<binary>.txt` dump path -> `<binary>`, its path inside the game tree."""
+	return path.split("/", 2)[2].removesuffix(".txt")
+
 def main() -> None:
 	if not HASHES_DIR.is_dir():
 		sys.exit(f"no hashes/ directory at {ROOT}")
 	out = SITE / "schemas"
 	out.mkdir(exist_ok=True)
-	unmapped_all = set()
+	renamed = apply_names(load_names())
+	unmapped: set[tuple[int, str, str]] = set()
 	for gid in GAME_ORDER:
 		data = build_game(gid)
 		(out / f"{gid}.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
 		rich = sum(1 for o in data["options"] if o.get("sites"))
-		unmapped_all.update(o["hash"] for o in data["options"] if o["name"] is None)
+		binaries = {m["name"]: dump_binary(m["path"]) for m in data["modules"]}
+		unmapped.update(
+			(o["hash"], gid, binaries[m])
+			for o in data["options"]
+			if o["name"] is None
+			for m in o["modules"]
+		)
 		print(
 			f"{gid}: {len(data['options'])} options ({rich} with site detail) "
 			f"across {len(data['modules'])} modules -> schemas/{gid}.json"
 		)
 	(ROOT / "unmapped.txt").write_text(
-		"".join(f"{h}\n" for h in sorted(unmapped_all)), encoding="utf-8"
+		"".join(line + "\n" for line in sorted(f"{h} {gid} {binary}" for h, gid, binary in unmapped)),
+		encoding="utf-8",
 	)
-	print(f"unmapped.txt: {len(unmapped_all)} hashes")
+	print(
+		f"unmapped.txt: {len({h for h, _, _ in unmapped})} hashes "
+		f"in {len({(g, b) for _, g, b in unmapped})} binaries"
+	)
+	print(f"named {renamed} dump line(s) from launch-options.txt")
 
 if __name__ == "__main__":
 	main()

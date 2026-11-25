@@ -1,0 +1,44 @@
+name: Check names
+
+on:
+  pull_request:
+    paths: ["launch-options.txt", "add-launch-option.py", ".github/workflows/names.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check added lines
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          LC_ALL=C sort -f -c launch-options.txt
+          test -z "$(cut -d, -f1 launch-options.txt | sort | uniq -d)"
+          test -z "$(sed 's/.*, //' launch-options.txt | sort | uniq -d)"
+          added=$(git diff -U0 "$BASE" HEAD -- launch-options.txt | grep '^+[^+]' | cut -c2- || true)
+          while IFS= read -r line; do
+            [ -n "$line" ] || continue
+            name=${line%, *}
+            want=${line#*, }
+            got=$(python add-launch-option.py "$name" | cut -d: -f1 | tr -d ' ')
+            if [ "$got" != "$want" ]; then echo "::error file=launch-options.txt::$name hashes to $got, not $want"; exit 1; fi
+            if ! grep -rqE "^($want|.*, $want)" hashes/; then echo "::error file=launch-options.txt::$want is not a hash any dump has seen"; exit 1; fi
+          done <<< "$added"
+          python site/scripts/build-data.py > /dev/null
+          while IFS= read -r line; do
+            [ -n "$line" ] || continue
+            hash=${line#*, }
+            if grep -qE "^$hash " unmapped.txt; then echo "::error file=launch-options.txt::$hash is still unmapped"; exit 1; fi
+          done <<< "$added"

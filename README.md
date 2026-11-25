@@ -3,6 +3,8 @@
 
 covers all source 2 games now: `hashes/cs2`, `hashes/dota2`, `hashes/deadlock` (deadlock needs an owned steam login).
 
+contact me on discord (@pandaptable) or check my website for additional contact methods https://pandaptable.moe if you have a launch option to an unmapped hash.
+
 ## site
 
 there's a static explorer for the dumps at https://hashes.pandaptable.moe/, a port of [ValveResourceFormat/SchemaExplorer](https://github.com/ValveResourceFormat/SchemaExplorer) (MIT) with the schema views replaced by launch options: per-game option lists with murmur hashes and module filters, plus a paste-your-launch-options checker. only cs2, dota2 and deadlock are included (other games ship older source 2 builds without hashed launch options).
@@ -28,7 +30,15 @@ cd site && npm install && npm run dev
 
 `word-list.txt` is for use with hashcat brute forcing, no proper script for hashcat usage but we did find a few with it
 
-`unmapped.txt` currently unknown hashes that need to be found.
+`unmapped.txt` currently unknown hashes that need to be found. one `<hash> <game> <binary>` line per hash per binary that references it (`cut -d' ' -f1 unmapped.txt` gives the bare hashes for hashcat).
+
+to name one of them: `python add-launch-option.py -novt` prints the name's hash. add it with the hash from `unmapped.txt` as the second argument: the line goes into `launch-options.txt` in order, unless the name hashes to something else.
+
+```
+python add-launch-option.py -novt 840103314
+```
+
+then `./update.sh --names-only` applies it to the existing dumps and rebuilds the site data. no dump needed for that: the `.txt` dumps are the only files that carry names, every sidecar is hashes only.
 
 `hashcat.patch` is a patch for hashcat to implement mmh2 32bit into it (it just replaces mmh1, so `hashcat -m 25700 -a 0` is the usage)
 
@@ -47,6 +57,8 @@ other commands
 # check count of unmapped launch options (all games)
 grep -hroE "^[0-9]+" ./hashes/cs2 ./hashes/dota2 ./hashes/deadlock | sort -u | wc -l
 
-# output unmapped launch options to file
-grep -hroE "^[0-9]+" ./hashes/cs2 ./hashes/dota2 ./hashes/deadlock | sort -u > unmapped.txt
+# output unmapped launch options to file: hash, game, binary (what build-data.py writes)
+grep -roE '^[0-9]+' ./hashes/cs2 ./hashes/dota2 ./hashes/deadlock | sed -E 's#^\./hashes/([^/]+)/(.+)\.txt:([0-9]+)$#\3 \1 \2#' | sort -u > unmapped.txt
 ```
+
+on windows run these in git bash: its `sort` is the same GNU sort as on linux. the `sort.exe` in system32 is not equivalent, it orders lines differently.

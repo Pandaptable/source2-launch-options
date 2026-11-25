@@ -23,8 +23,8 @@ const KINDS = [
 // A chip's tooltip says what clicking it does. Flags add what the flag means, since their names don't
 const TAG_TITLE: Record<TagState, (value: string) => string> = {
   off: (v) => `Only show ${v}`,
-  include: (v) => `Stop filtering by ${v}`,
-  exclude: (v) => `Stop filtering by ${v}`,
+  include: (v) => `Click again to hide ${v}`,
+  exclude: (v) => `Stop hiding ${v}`,
 };
 
 const FLAG_TITLE: Record<TagState, (flag: string) => string> = {

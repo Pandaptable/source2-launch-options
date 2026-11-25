@@ -37,6 +37,7 @@
 --pulse_compile_temporaries, 327937524
 --pulse_verbose, 502640937
 -1080, 2728263361
+-1440, 2005827063
 -1600, 3701529680
 -32bit, 1592125839
 -480, 796564511
@@ -349,6 +350,7 @@
 -edit, 3009469648
 -editable, 405856605
 -emaildumps, 379720802
+-emaildumps_message_extra, 3046097161
 -emaildumps_notes, 2546507653
 -emaildumps_subject_extra, 720252668
 -emaildumps_to, 4251604169
@@ -811,6 +813,7 @@
 -nodrawtriggers, 2119501529
 -nodttest, 2304849128
 -nodump, 283207015
+-noemaildumps, 1038245900
 -noerrormaterials, 1726320631
 -noexclusivefs, 1227356121
 -noff, 3721522817
@@ -918,6 +921,7 @@
 -novirtualmesh, 3419197344
 -novpk, 2345050509
 -novsync, 2561736516
+-novt, 840103314
 -nowatchdog, 552803535
 -nowater, 3438906289
 -noweaponmodelcache, 468999652
@@ -1409,6 +1413,7 @@
 -vminidump_exception_code, 394860757
 -voicerecord, 1530812005
 -vpkincr, 3020399469
+-vprofjson, 1732479632
 -vproject, 2798449379
 -vrad3, 3532387015
 -vrad3largeblocksize, 2327613413
@@ -1466,7 +1471,9 @@
 -vulkan_disable_khr_image_format_list, 3342255948
 -vulkan_disable_khr_maintenance1, 3753892405
 -vulkan_disable_khr_maintenance2, 3281609859
+-vulkan_disable_khr_maintenance6, 1076993514
 -vulkan_disable_khr_present_wait, 2777541204
+-vulkan_disable_khr_present_wait2, 1744630599
 -vulkan_disable_khr_ray_tracing_position_fetch, 164863566
 -vulkan_disable_khr_separate_depth_stencil_layouts, 1277924399
 -vulkan_disable_khr_shader_clock, 2626482410

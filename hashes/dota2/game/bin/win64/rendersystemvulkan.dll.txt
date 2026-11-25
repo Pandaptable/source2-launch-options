@@ -23,7 +23,7 @@
 -force_recommend_dx11, 1014489924
 -noassert, 1067982513
 -vulkan_disable_ext_depth_bias_control, 1072387495
-1076993514
+-vulkan_disable_khr_maintenance6, 1076993514
 -vulkan_enable_ext_device_generated_commands, 1183232867
 -vulkan_disable_steam_downloaded_shader_cache, 1222989069
 -renderdoc_capture_validation_errors, 1238242786
@@ -46,7 +46,7 @@
 -vulkan_disable_ext_memory_budget, 1626377711
 -multigpu, 1731710107
 -vulkan_disable_khr_shader_integer_dot_product, 1735596800
-1744630599
+-vulkan_disable_khr_present_wait2, 1744630599
 -vulkan_disable_ext_full_screen_exclusive, 1814560080
 -disable_async_shaders, 1843755095
 -sse4, 1849011768
