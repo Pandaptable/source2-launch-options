@@ -55,7 +55,7 @@
 -vulkan_enable_nv_raytracing_validation, 1957510917
 -renderdoc, 1980692650
 -autoconfig_level, 1997326025
-2080957601
+-mat_force_meshlet_overflow, 2080957601
 -vulkan_disable_ext_opacity_micromap, 2179270029
 -vulkanrenderthreadstack, 2194226460
 -noaftermath, 2299247585

@@ -695,6 +695,7 @@
 -matrices, 2433741488
 -mat_aaquality, 2530962076
 -mat_antialias, 1435530326
+-mat_force_meshlet_overflow, 2080957601
 -mat_force_molten_vk, 3087691872
 -mat_resolvefullframedepth, 503808784
 -mat_softwaretl, 614353347
