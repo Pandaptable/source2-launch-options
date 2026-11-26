@@ -1,7 +1,7 @@
 -memstd_force_tracking, 6633946
 -force_battery_level_battery, 30587715
 -enable_minidump_log, 53519617
-102357432
+-assert_suppress_dialog_hotkeys, 102357432
 -tools, 197456290
 -no_assert_dialog, 237667489
 -nodump, 283207015

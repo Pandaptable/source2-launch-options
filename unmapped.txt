@@ -1,3 +1,2 @@
-102357432 dota2 game/bin/win64/tier0.dll
 2080957601 dota2 game/bin/win64/rendersystemvulkan.dll
 3157844845 dota2 game/bin/win64/engine2.dll

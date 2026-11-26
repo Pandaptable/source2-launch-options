@@ -108,6 +108,7 @@
 -assert_content, 3643720015
 -assert_dialog_dark_mode, 2283447289
 -assert_dialog_hotkeys, 4129253467
+-assert_suppress_dialog_hotkeys, 102357432
 -asset, 1799856898
 -assetbrowser, 3869122259
 -assetinit, 3651056579
