@@ -207,7 +207,10 @@ function valuePredicates(values: string[], known: Map<string, number>): Predicat
   return values.map((v): Predicate => (known.has(v) ? (x) => x === v : (x) => x.includes(v)));
 }
 
-/** module: (any of) and -module: (none of), or null without module filters */
+/**
+ * module: (any of) and -module: (none of), or null without module filters. A disabled module only
+ * takes an option away when none of its other modules passes the filters as well
+ */
 export function moduleFilter(
   parsed: ParsedConsoleSearch,
   stats: ConsoleStats,
@@ -216,8 +219,9 @@ export function moduleFilter(
   const exclude = valuePredicates(parsed.notModules, stats.modules);
   if (include.length === 0 && exclude.length === 0) return null;
   return (item) =>
-    (include.length === 0 || item.modules.some((m) => include.some((p) => p(m)))) &&
-    !item.modules.some((m) => exclude.some((p) => p(m)));
+    item.modules.some(
+      (m) => (include.length === 0 || include.some((p) => p(m))) && !exclude.some((p) => p(m)),
+    );
 }
 
 /** type: (any of the item's value types) and -type: (none of them), or null without type filters */

@@ -144,6 +144,19 @@ function useConsoleFilters() {
 
     // Each group's chips count what they would add to every other filter
     const moduleMatches = matchesModules ? inKind(rest, effKind) : visible;
+    const moduleCounts = countBy(moduleMatches, ({ item }) => item.modules);
+    // A disabled module's chip counts the options it hides: only those that none of their other
+    // modules keeps listed
+    if (matchesModules) {
+      const listed = matchesModules;
+      for (const value of parsed.notModules) {
+        const lifted = moduleFilter({ ...parsed, notModules: parsed.notModules.filter((v) => v !== value) }, stats);
+        moduleCounts.set(
+          value,
+          moduleMatches.filter(({ item }) => (!lifted || lifted(item)) && !listed(item)).length,
+        );
+      }
+    }
     const typeMatches = matchesTypes
       ? inKind(inModules(found.results, matchesModules), effKind)
       : visible;
@@ -164,7 +177,7 @@ function useConsoleFilters() {
       visible,
       similar,
       kindCounts: { all: allKinds.length, convars, commands, unmapped, values },
-      moduleCounts: countBy(moduleMatches, ({ item }) => item.modules),
+      moduleCounts,
       typeCounts: countBy(typeMatches, ({ item }) => itemTypes(item)),
       flagCounts,
     };
